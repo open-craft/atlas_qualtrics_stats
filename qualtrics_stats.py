@@ -18,6 +18,7 @@ import requests
 import csv
 import json
 import sys
+import logging
 from collections import defaultdict, Counter
 from docopt import docopt
 from lockfile import FileLock
@@ -145,7 +146,12 @@ class QualtricsStats():
             for q in survey_xml
         )
 
+        logging.info('Loaded survey %s with %d questions',
+            self.survey_id, len(self.questions))
+
     def get(self):
+        logging.info('Making Qualtrics API call...')
+
         url = 'https://new.qualtrics.com/Server/RestApi.php'
         data = {
             'Request': 'getResponseData',
@@ -161,11 +167,15 @@ class QualtricsStats():
         for i in range(2): next(self.csv)  # Strip title
 
     def run(self):
+        logging.info('Starting to fetch and parse data...')
+
         for csv_line in self.csv:
             for question in self.questions:
                 question.parse_line(csv_line)
 
     def json(self):
+        logging.info('Dumping results to JSON...')
+
         return json.dumps({
             'survey_qualtrics_id': self.survey_id,
             'statistics': [q.as_dict() for q in self.questions]
@@ -180,7 +190,12 @@ def main():
     print(QS.json())
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s')
+
     lock = FileLock("/tmp/qualtrics_stats.lock")
-    if lock.is_locked(): sys.exit(1)
+    if lock.is_locked():
+        logging.error('Lockfile locked, exiting.')
+        sys.exit(1)
     with lock:
         main()
