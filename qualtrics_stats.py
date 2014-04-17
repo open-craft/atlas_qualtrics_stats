@@ -16,6 +16,7 @@ Options:
 import xml.etree.ElementTree as ET
 import requests
 import csv
+import json
 from collections import defaultdict, Counter
 from docopt import docopt
 
@@ -48,6 +49,14 @@ class MRQQuestion(Question):
         self.general.add(n)
         self.countries[country].add(n)
 
+    def as_dict(self):
+        return {
+            'type': 'mrq',
+            'title': self.title,
+            'average': self.general.average,
+            'countries': dict((k, v.average) for k, v in self.countries.items())
+        }
+
 class RankQuestion(Question):
     def __init__(self, question_xml, country_column):
         self.general = Counter()
@@ -60,9 +69,14 @@ class RankQuestion(Question):
 
         self.country_column = country_column
 
+    def _get_top(self, counter):
+        most_common = counter.most_common(1)
+        if not most_common: return None
+        return self.answers[most_common[0][0]]
+
     def __repr__(self):
         return "<RankQuestion title='{}' columns='{}' top='{}' count='{}'>".format(
-            self.title, self.columns, self.general.most_common(1), sum(self.general.values()))
+            self.title, self.columns, self._get_top(self.general), sum(self.general.values()))
 
     def parse_line(self, csv_line):
         # XXX Are questions optional?
@@ -72,6 +86,14 @@ class RankQuestion(Question):
                 self.general[c] += 1
                 self.countries[country][c] += 1
                 break
+
+    def as_dict(self):
+        return {
+            'type': 'rank',
+            'title': self.title,
+            'top': self._get_top(self.general),
+            'countries': dict((k, self._get_top(v)) for k, v in self.countries.items())
+        }
 
 class SliderQuestion(Question):
     def __init__(self, question_xml, country_column):
@@ -94,6 +116,14 @@ class SliderQuestion(Question):
             n = int(csv_line[self.column])
             self.general.add(n)
             self.countries[country].add(n)
+
+    def as_dict(self):
+        return {
+            'type': 'slider',
+            'title': self.title,
+            'average': self.general.average,
+            'countries': dict((k, v.average) for k, v in self.countries.items())
+        }
 
 
 class QualtricsStats():
@@ -133,10 +163,15 @@ class QualtricsStats():
             for question in self.questions:
                 question.parse_line(csv_line)
 
+    def json(self):
+        return json.dumps({
+            'survey_qualtrics_id': self.survey_id,
+            'statistics': [q.as_dict() for q in self.questions]
+        }, indent=4)
+
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Qualtrics Stats 0.1')
     QS = QualtricsStats(arguments['<survey_xml_spec>'])
     QS.get()
     QS.run()
-
-    print(QS.questions)
+    print(QS.json())

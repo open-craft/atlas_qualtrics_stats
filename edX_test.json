@@ -1,0 +1,34 @@
+{
+    "statistics": [
+        {
+            "title": "MRQ", 
+            "countries": {
+                "181": 3.0, 
+                "39": 0.0, 
+                "24": 2.0
+            }, 
+            "type": "mrq", 
+            "average": 1.6666666666666665
+        }, 
+        {
+            "title": "Slider", 
+            "countries": {
+                "181": 6.0, 
+                "24": 30.0
+            }, 
+            "type": "slider", 
+            "average": 18.0
+        }, 
+        {
+            "title": "Rank order", 
+            "countries": {
+                "181": "A", 
+                "39": "B", 
+                "24": "B"
+            }, 
+            "type": "rank", 
+            "top": "B"
+        }
+    ], 
+    "survey_qualtrics_id": "SV_0pQ0bjc02t8PNDT"
+}
