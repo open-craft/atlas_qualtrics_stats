@@ -17,8 +17,10 @@ import xml.etree.ElementTree as ET
 import requests
 import csv
 import json
+import sys
 from collections import defaultdict, Counter
 from docopt import docopt
+from lockfile import FileLock
 
 from running_average import RunningAverage
 
@@ -169,9 +171,16 @@ class QualtricsStats():
             'statistics': [q.as_dict() for q in self.questions]
         }, indent=4)
 
-if __name__ == '__main__':
+
+def main():
     arguments = docopt(__doc__, version='Qualtrics Stats 0.1')
     QS = QualtricsStats(arguments['<survey_xml_spec>'])
     QS.get()
     QS.run()
     print(QS.json())
+
+if __name__ == '__main__':
+    lock = FileLock("/tmp/qualtrics_stats.lock")
+    if lock.is_locked(): sys.exit(1)
+    with lock:
+        main()
