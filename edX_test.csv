@@ -1,0 +1,5 @@
+﻿V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,Q5,Q1_1,Q1_2,Q1_3,Q2_1,Q2_2,Q2_3,Q3_1,Q3_2,Q3_3,Q3_4,LocationLatitude,LocationLongitude,LocationAccuracy,
+ResponseID,ResponseSet,Name,ExternalDataReference,EmailAddress,IPAddress,Status,StartDate,EndDate,Finished,List of Countries,Rank order-A,Rank order-B,Rank order-C,Sliders-A,Sliders-B,Sliders-C,Multiple Choice-A,Multiple Choice-B,Multiple Choice-C,Multiple Choice-D,LocationLatitude,LocationLongitude,LocationAccuracy,
+R_eM4UuZHICs7ocuh,Default Response Set,Anonymous,,,93.35.109.138,0,2014-04-17 03:03:43,2014-04-17 03:03:59,1,24,2,1,3,30,66,100,1,,1,,45.783294677734,8.8332977294922,-1,
+R_6kXO53VvQIyCoER,Default Response Set,Anonymous,,,93.35.109.138,0,2014-04-17 03:04:06,2014-04-17 03:04:25,1,39,2,1,3,,100,,,,,,45.783294677734,8.8332977294922,-1,
+R_eM3OXInjoGMpJBj,Default Response Set,Anonymous,,,93.35.109.138,0,2014-04-17 03:04:35,2014-04-17 03:04:55,1,181,1,2,3,6,0,100,1,1,1,,45.783294677734,8.8332977294922,-1,
