@@ -45,12 +45,14 @@ class MRQQuestion(Question):
             self.title, self.start, self.end, self.general.average, self.general.count)
 
     def parse_line(self, csv_line):
-        # XXX Are questions optional? - How to detect that?
-        n = sum(1 for c in csv_line[self.start : self.end+1] if c == '1')
+        # Skip unanswered question
+        if csv_line[self.start] == '99999': return
+
+        n = sum(1 for c in csv_line[self.start : self.end+1] if c != '0')
 
         country = csv_line[self.country_column]
         self.general.add(n)
-        self.countries[country].add(n)
+        if country != '99999': self.countries[country].add(n)
 
     def as_dict(self):
         return {
@@ -82,13 +84,15 @@ class RankQuestion(Question):
             self.title, self.columns, self._get_top(self.general), sum(self.general.values()))
 
     def parse_line(self, csv_line):
-        # XXX Are questions optional?
         country = csv_line[self.country_column]
         for c in self.columns:
             if csv_line[c] == '1':
                 self.general[c] += 1
-                self.countries[country][c] += 1
+                if country != '99999': self.countries[country][c] += 1
                 break
+            elif csv_line[c] == '99999':
+                # Skip unanswered rank
+                return
 
     def as_dict(self):
         return {
@@ -114,11 +118,10 @@ class SliderQuestion(Question):
 
     def parse_line(self, csv_line):
         country = csv_line[self.country_column]
-        if csv_line[self.column]:
-            # XXX Skip unanswered sliders - should count them as 0?
+        if csv_line[self.column] != '99999': # Skip unanswered sliders
             n = int(csv_line[self.column])
             self.general.add(n)
-            self.countries[country].add(n)
+            if country != '99999': self.countries[country].add(n)
 
     def as_dict(self):
         return {
@@ -159,6 +162,8 @@ class QualtricsStats():
             'Password': self.password,
             'SurveyID': self.survey_id,
             'Format': 'CSV',
+            'Labels': 1,
+            'UnansweredRecode': 99999
         }
         r = requests.post(url, data=data, stream=True)
         # csv_lines = r.iter_lines()
