@@ -4,13 +4,14 @@
 """Generate statistics for a Qualtrics survey.
 
 Usage:
-  qualtrics_stats.py <survey_xml_spec>
+  qualtrics_stats.py [--override=<file>] <survey_xml_spec>
   qualtrics_stats.py (-h | --help)
   qualtrics_stats.py --version
 
 Options:
-  -h --help     Show this screen.
-  --version     Show version.
+  --override=FILE  Read the csv from a file instad of from the API
+  -h --help        Show this screen.
+  --version        Show version.
 
 """
 import xml.etree.ElementTree as ET
@@ -141,7 +142,9 @@ class SliderQuestion(Question):
 
 
 class QualtricsStats():
-    def __init__(self, survey_xml_spec):
+    def __init__(self, survey_xml_spec, file_override=None):
+        self.file_override = file_override
+
         tree = ET.parse(survey_xml_spec)
 
         self.user = tree.getroot().attrib['user']
@@ -174,18 +177,26 @@ class QualtricsStats():
             'UnansweredRecode': 99999
         }
         r = requests.post(url, data=data, stream=True)
-        # csv_lines = r.iter_lines()
-        csv_lines = open('edX_test.csv')  # XXX DEV
+        csv_lines = r.iter_lines(decode_unicode=True)
+
+        if self.file_override:
+            # For development and testing
+            logging.info('Reading lines from a local file.')
+            csv_lines = open(self.file_override)
+
         self.csv = csv.reader(csv_lines, strict=True)
         for i in range(2):
             next(self.csv)  # Strip title
 
     def run(self):
-        logging.info('Starting to fetch and parse data...')
+        self.get()
 
+        logging.info('Starting to fetch and parse data...')
         for csv_line in self.csv:
             for question in self.questions:
                 question.parse_line(csv_line)
+
+        return self.json()
 
     def json(self):
         logging.info('Dumping results to JSON...')
@@ -198,10 +209,9 @@ class QualtricsStats():
 
 def main():
     arguments = docopt(__doc__, version='Qualtrics Stats 0.1')
-    QS = QualtricsStats(arguments['<survey_xml_spec>'])
-    QS.get()
-    QS.run()
-    print(QS.json())
+    QS = QualtricsStats(arguments['<survey_xml_spec>'],
+                        arguments['--override'])
+    print(QS.run())
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,

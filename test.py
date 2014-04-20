@@ -1,6 +1,7 @@
 import unittest
 import random
 import pep8
+import json
 
 
 class TestCodeFormat(unittest.TestCase):
@@ -28,3 +29,14 @@ class TestRunningAverage(unittest.TestCase):
             A.add(v)
 
         self.assertAlmostEqual(A.average, true_avg)
+
+
+class TestQualtricsStats(unittest.TestCase):
+    def test_stats_result(self):
+        from qualtrics_stats import QualtricsStats
+
+        QS = QualtricsStats('exampleSurvey.xml', 'edX_test.csv')
+        res = json.loads(QS.run())
+
+        with open('edX_test.json') as f:
+            self.assertEqual(res, json.load(f))
