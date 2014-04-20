@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.3
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
+
 
 class AbstractRunningAverage():
     """
@@ -20,11 +21,13 @@ class AbstractRunningAverage():
         """Get the number of averaged values."""
         return self._count
 
+
 class AdaptiveRunningAverage(AbstractRunningAverage):
     def add(self, value):
         self._average = self._average * (self._count / (self._count + 1)) + \
             (value / (self._count + 1))
         self._count += 1
+
 
 class DiffRunningAverage(AbstractRunningAverage):
     # This one is slightly faster and simpler
@@ -34,7 +37,8 @@ class DiffRunningAverage(AbstractRunningAverage):
 
 RunningAverage = DiffRunningAverage
 
-def test():
+
+def benchmark():
     import random
     import time
 
@@ -53,7 +57,8 @@ def test():
         A.add(v)
     stop = time.time()
 
-    print('AdaptiveRunningAverage: {} seconds, {} error'.format(stop - start, A.average - true_avg))
+    print('AdaptiveRunningAverage: {} seconds, {} error'.format(
+        stop - start, A.average - true_avg))
 
     B = DiffRunningAverage()
     start = time.time()
@@ -61,7 +66,8 @@ def test():
         B.add(v)
     stop = time.time()
 
-    print('DiffRunningAverage: {} seconds, {} error'.format(stop - start, B.average - true_avg))
+    print('DiffRunningAverage: {} seconds, {} error'.format(
+        stop - start, B.average - true_avg))
 
 if __name__ == '__main__':
-    test()
+    benchmark()

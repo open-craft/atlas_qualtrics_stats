@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.3
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 """Generate statistics for a Qualtrics survey.
 
@@ -29,13 +29,14 @@ from running_average import RunningAverage
 class Question:
     pass
 
+
 class MRQQuestion(Question):
     def __init__(self, question_xml, country_column):
         self.general = RunningAverage()
         self.countries = defaultdict(RunningAverage)
 
         self.start, self.end = (int(c) for c in
-            question_xml.attrib['columns'].split('-', 1))
+                                question_xml.attrib['columns'].split('-', 1))
         self.title = question_xml.attrib['title']
 
         self.country_column = country_column
@@ -46,13 +47,15 @@ class MRQQuestion(Question):
 
     def parse_line(self, csv_line):
         # Skip unanswered question
-        if csv_line[self.start] == '99999': return
+        if csv_line[self.start] == '99999':
+            return
 
-        n = sum(1 for c in csv_line[self.start : self.end+1] if c != '0')
+        n = sum(1 for c in csv_line[self.start:self.end + 1] if c != '0')
 
         country = csv_line[self.country_column]
         self.general.add(n)
-        if country != '99999': self.countries[country].add(n)
+        if country != '99999':
+            self.countries[country].add(n)
 
     def as_dict(self):
         return {
@@ -62,6 +65,7 @@ class MRQQuestion(Question):
             'countries': dict((k, v.average) for k, v in self.countries.items())
         }
 
+
 class RankQuestion(Question):
     def __init__(self, question_xml, country_column):
         self.general = Counter()
@@ -70,13 +74,14 @@ class RankQuestion(Question):
         self.title = question_xml.attrib['title']
         self.columns = tuple(int(o.attrib['column']) for o in question_xml)
         self.answers = dict((int(o.attrib['column']), o.attrib['title'])
-            for o in question_xml )
+                            for o in question_xml)
 
         self.country_column = country_column
 
     def _get_top(self, counter):
         most_common = counter.most_common(1)
-        if not most_common: return None
+        if not most_common:
+            return None
         return self.answers[most_common[0][0]]
 
     def __repr__(self):
@@ -88,7 +93,8 @@ class RankQuestion(Question):
         for c in self.columns:
             if csv_line[c] == '1':
                 self.general[c] += 1
-                if country != '99999': self.countries[country][c] += 1
+                if country != '99999':
+                    self.countries[country][c] += 1
                 break
             elif csv_line[c] == '99999':
                 # Skip unanswered rank
@@ -101,6 +107,7 @@ class RankQuestion(Question):
             'top': self._get_top(self.general),
             'countries': dict((k, self._get_top(v)) for k, v in self.countries.items())
         }
+
 
 class SliderQuestion(Question):
     def __init__(self, question_xml, country_column):
@@ -118,10 +125,11 @@ class SliderQuestion(Question):
 
     def parse_line(self, csv_line):
         country = csv_line[self.country_column]
-        if csv_line[self.column] != '99999': # Skip unanswered sliders
+        if csv_line[self.column] != '99999':  # Skip unanswered sliders
             n = int(csv_line[self.column])
             self.general.add(n)
-            if country != '99999': self.countries[country].add(n)
+            if country != '99999':
+                self.countries[country].add(n)
 
     def as_dict(self):
         return {
@@ -150,7 +158,7 @@ class QualtricsStats():
         )
 
         logging.info('Loaded survey %s with %d questions',
-            self.survey_id, len(self.questions))
+                     self.survey_id, len(self.questions))
 
     def get(self):
         logging.info('Making Qualtrics API call...')
@@ -169,7 +177,8 @@ class QualtricsStats():
         # csv_lines = r.iter_lines()
         csv_lines = open('edX_test.csv')  # XXX DEV
         self.csv = csv.reader(csv_lines, strict=True)
-        for i in range(2): next(self.csv)  # Strip title
+        for i in range(2):
+            next(self.csv)  # Strip title
 
     def run(self):
         logging.info('Starting to fetch and parse data...')
@@ -196,7 +205,7 @@ def main():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
-        format='%(asctime)s [%(levelname)s] %(message)s')
+                        format='%(asctime)s [%(levelname)s] %(message)s')
 
     lock = FileLock("/tmp/qualtrics_stats.lock")
     if lock.is_locked():
