@@ -13,11 +13,9 @@ Will run on Python 3.3 or 3.4.
 Generate and serve statistics for a Qualtrics survey.
 
 Usage:
-  qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  qualtrics_stats cron
-  qualtrics_stats serve
-  qualtrics_stats (-h | --help)
-  qualtrics_stats --version
+  python3 -m qualtrics_stats generate [--override=<file>] <survey_xml_spec>
+  python3 -m qualtrics_stats (-h | --help)
+  python3 -m qualtrics_stats --version
 
 Generate options:
   --override=FILE  Read the csv from a file instad of from the API
@@ -77,6 +75,10 @@ The average value of the slider will be shown.
 ```
 
 Each option has its own display title, that will be shown for the most selected one (i.e. "Rank order - Brazil: B").
+
+## API and database
+
+See [`API.md`](API.md) for the exposed REST API docs, and [`DATABASE.md`](DATABASE.md) for the SQLite database schema.
 
 ## Testing
 
