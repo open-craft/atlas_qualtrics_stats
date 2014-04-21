@@ -1,19 +1,6 @@
 #!/usr/bin/env python3.3
 # -*- coding:utf-8 -*-
 
-"""Generate statistics for a Qualtrics survey.
-
-Usage:
-  qualtrics_stats.py [--override=<file>] <survey_xml_spec>
-  qualtrics_stats.py (-h | --help)
-  qualtrics_stats.py --version
-
-Options:
-  --override=FILE  Read the csv from a file instad of from the API
-  -h --help        Show this screen.
-  --version        Show version.
-
-"""
 import xml.etree.ElementTree as ET
 import requests
 import csv
@@ -22,9 +9,8 @@ import sys
 import logging
 from collections import defaultdict, Counter
 from docopt import docopt
-from lockfile import FileLock
 
-from running_average import RunningAverage
+from .running_average import RunningAverage
 
 
 class Question:
@@ -205,21 +191,3 @@ class QualtricsStats():
             'survey_qualtrics_id': self.survey_id,
             'statistics': [q.as_dict() for q in self.questions]
         }, indent=4)
-
-
-def main():
-    arguments = docopt(__doc__, version='Qualtrics Stats 0.1')
-    QS = QualtricsStats(arguments['<survey_xml_spec>'],
-                        open(arguments['--override']) if arguments['--override'] else None)
-    print(QS.run())
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s [%(levelname)s] %(message)s')
-
-    lock = FileLock("/tmp/qualtrics_stats.lock")
-    if lock.is_locked():
-        logging.error('Lockfile locked, exiting.')
-        sys.exit(1)
-    with lock:
-        main()

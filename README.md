@@ -10,15 +10,19 @@ Will run on Python 3.3 or 3.4.
 ## Usage
 
 ```
-Generate statistics for a Qualtrics survey.
+Generate and serve statistics for a Qualtrics survey.
 
 Usage:
-  qualtrics_stats.py [--override=<file>] <survey_xml_spec>
-  qualtrics_stats.py (-h | --help)
-  qualtrics_stats.py --version
+  qualtrics_stats generate [--override=<file>] <survey_xml_spec>
+  qualtrics_stats cron
+  qualtrics_stats serve
+  qualtrics_stats (-h | --help)
+  qualtrics_stats --version
 
-Options:
+Generate options:
   --override=FILE  Read the csv from a file instad of from the API
+
+General options:
   -h --help        Show this screen.
   --version        Show version.
 ```
@@ -84,12 +88,11 @@ nosetests --rednose --verbose
 Coverage:
 
 ```
-coverage run nosetests
-coverage report -m
+nosetests --with-coverage --cover-package=qualtrics_stats
 ```
 
 See also the following files for example input/output:
 
-* [`testSurvey.xml`](testSurvey.xml): `<survey_xml_spec>`
-* [`edX_test.csv`](edX_test.csv): API CSV input
-* [`edX_test.json`](edX_test.json): JSON output
+* [`exampleSurvey.xml`](qualtrics_stats/exampleSurvey.xml): `<survey_xml_spec>`
+* [`edX_test.csv`](qualtrics_stats/tests/edX_test.csv): API CSV input
+* [`edX_test.json`](qualtrics_stats/tests/edX_test.json): JSON output
