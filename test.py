@@ -2,6 +2,7 @@ import unittest
 import random
 import pep8
 import json
+import time
 
 
 class TestCodeFormat(unittest.TestCase):
@@ -35,8 +36,40 @@ class TestQualtricsStats(unittest.TestCase):
     def test_stats_result(self):
         from qualtrics_stats import QualtricsStats
 
-        QS = QualtricsStats('exampleSurvey.xml', 'edX_test.csv')
+        QS = QualtricsStats('exampleSurvey.xml', open('edX_test.csv'))
         res = json.loads(QS.run())
 
         with open('edX_test.json') as f:
             self.assertEqual(res, json.load(f))
+
+    def test_100K_lines_performance(self):
+        def csv_lines_repetitor():
+            f = open('edX_test.csv')
+            for i in range(2):
+                yield next(f)
+            file_lines = f.readlines()
+            line_count = 0
+            while line_count < 100000:
+                for line in file_lines:
+                    line_count += 1
+                    yield line
+
+        from qualtrics_stats import QualtricsStats
+
+        QS = QualtricsStats('exampleSurvey.xml', csv_lines_repetitor())
+
+        start = time.time()
+        json_output = QS.run()
+        self.assertLess(time.time() - start, 20)
+
+        res = json.loads(json_output)
+
+        with open('edX_test.json') as f:
+            ref = json.load(f)
+
+        for n, stat in enumerate(res['statistics']):
+            if 'average' in stat:
+                self.assertAlmostEqual(stat['average'], ref['statistics'][n]['average'])
+                stat['average'] = ref['statistics'][n]['average'] = 1
+
+        self.assertEqual(res, ref)

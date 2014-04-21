@@ -142,8 +142,8 @@ class SliderQuestion(Question):
 
 
 class QualtricsStats():
-    def __init__(self, survey_xml_spec, file_override=None):
-        self.file_override = file_override
+    def __init__(self, survey_xml_spec, csv_override=None):
+        self.csv_override = csv_override
 
         tree = ET.parse(survey_xml_spec)
 
@@ -179,10 +179,10 @@ class QualtricsStats():
         r = requests.post(url, data=data, stream=True)
         csv_lines = r.iter_lines(decode_unicode=True)
 
-        if self.file_override:
+        if self.csv_override:
             # For development and testing
-            logging.info('Reading lines from a local file.')
-            csv_lines = open(self.file_override)
+            logging.info('Overriding csv source.')
+            csv_lines = self.csv_override
 
         self.csv = csv.reader(csv_lines, strict=True)
         for i in range(2):
@@ -210,7 +210,7 @@ class QualtricsStats():
 def main():
     arguments = docopt(__doc__, version='Qualtrics Stats 0.1')
     QS = QualtricsStats(arguments['<survey_xml_spec>'],
-                        arguments['--override'])
+                        open(arguments['--override']) if arguments['--override'] else None)
     print(QS.run())
 
 if __name__ == '__main__':
