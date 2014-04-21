@@ -5,10 +5,8 @@ import xml.etree.ElementTree as ET
 import requests
 import csv
 import json
-import sys
 import logging
 from collections import defaultdict, Counter
-from docopt import docopt
 
 from .running_average import RunningAverage
 
