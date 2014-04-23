@@ -98,3 +98,15 @@ See also the following files for example input/output:
 * [`exampleSurvey.xml`](qualtrics_stats/exampleSurvey.xml): `<survey_xml_spec>`
 * [`edX_test.csv`](qualtrics_stats/tests/edX_test.csv): API CSV input
 * [`edX_test.json`](qualtrics_stats/tests/edX_test.json): JSON output
+
+## Sample run
+
+```
+(atlas-stats)www-data@harvard-atlas:~/atlas_qualtrics_stats$ python3 -m qualtrics_stats generate --override=qualtrics_stats/tests/edX_test.csv qualtrics_stats/exampleSurvey.xml
+2014-04-23 01:24:13,404 [INFO] Loaded survey SV_0pQ0bjc02t8PNDT with 3 questions
+2014-04-23 01:24:13,405 [INFO] Making Qualtrics API call...
+2014-04-23 01:24:13,453 [INFO] Starting new HTTPS connection (1): new.qualtrics.com
+2014-04-23 01:24:14,284 [INFO] Overriding csv source.
+2014-04-23 01:24:14,287 [INFO] Starting to fetch and parse data...
+2014-04-23 01:24:14,288 [INFO] Dumping results to JSON...
+```
