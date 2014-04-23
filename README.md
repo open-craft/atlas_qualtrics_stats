@@ -81,6 +81,13 @@ pip install -r requirements_test.txt
 nosetests --rednose --verbose
 ```
 
+Coverage:
+
+```
+coverage run nosetests
+coverage report -m
+```
+
 See also the following files for example input/output:
 
 * [`testSurvey.xml`](testSurvey.xml): `<survey_xml_spec>`
