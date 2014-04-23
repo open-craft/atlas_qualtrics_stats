@@ -36,7 +36,7 @@ class TestQualtricsStats(unittest.TestCase):
     def test_stats_result(self):
         from qualtrics_stats import QualtricsStats
 
-        QS = QualtricsStats('exampleSurvey.xml', open('edX_test.csv'))
+        QS = QualtricsStats('testSurvey.xml', open('edX_test.csv'))
         res = json.loads(QS.run())
 
         with open('edX_test.json') as f:
@@ -56,7 +56,7 @@ class TestQualtricsStats(unittest.TestCase):
 
         from qualtrics_stats import QualtricsStats
 
-        QS = QualtricsStats('exampleSurvey.xml', csv_lines_repetitor())
+        QS = QualtricsStats('testSurvey.xml', csv_lines_repetitor())
 
         start = time.time()
         json_output = QS.run()
