@@ -1,0 +1,33 @@
+{
+    "statistics": [
+        {
+            "countries": {
+                "Tuvalu": 3.0, 
+                "Brazil": 2.0
+            }, 
+            "title": "MRQ", 
+            "type": "mrq", 
+            "average": 1.6666666666666665
+        }, 
+        {
+            "countries": {
+                "Tuvalu": 6.0, 
+                "Brazil": 30.0
+            }, 
+            "title": "Slider", 
+            "type": "slider", 
+            "average": 19.333333333333332
+        }, 
+        {
+            "countries": {
+                "Congo, Republic of the...": "B", 
+                "Tuvalu": "A", 
+                "Brazil": "B"
+            }, 
+            "title": "Rank order", 
+            "type": "rank", 
+            "top": "A"
+        }
+    ], 
+    "survey_qualtrics_id": "SV_0pQ0bjc02t8PNDT"
+}

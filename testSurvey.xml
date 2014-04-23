@@ -1,0 +1,13 @@
+<qualtrics user="xx@filippo.io" password="u6PuQQsEE8WFzY2G4njCGbux">
+<survey qualtrics_survey_id="SV_0pQ0bjc02t8PNDT" country_column="11">
+  <!-- country_column, column and columns are zero-indexed -->
+  <!-- columns: both start-end included -->
+  <mrq title="MRQ" columns="18-21" />
+  <slider title="Slider" column="15" />
+  <rank title="Rank order">
+    <option title="A" column="12" />
+    <option title="B" column="13" />
+    <option title="C" column="14" />
+  </rank>
+</survey>
+</qualtrics>
