@@ -13,9 +13,11 @@ Will run on Python 3.3 or 3.4.
 Generate and serve statistics for a Qualtrics survey.
 
 Usage:
-  python3 -m qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  python3 -m qualtrics_stats (-h | --help)
-  python3 -m qualtrics_stats --version
+  qualtrics_stats generate [--override=<file>] <survey_xml_spec>
+  qualtrics_stats cron
+  qualtrics_stats serve
+  qualtrics_stats (-h | --help)
+  qualtrics_stats --version
 
 Generate options:
   --override=FILE  Read the csv from a file instad of from the API
