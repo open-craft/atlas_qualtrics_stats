@@ -26,7 +26,7 @@ class API_key(Base):
 class Job(Base):
     __tablename__ = 'JOBS'
     id = Column(String, primary_key=True)
-    API_key = Column(String, ForeignKey('API_KEYS.key'))
+    API_key = Column(String, ForeignKey('API_KEYS.key'), primary_key=True)
     xml_spec = Column(String)
     value = Column(String)
     created = Column(DateTime)

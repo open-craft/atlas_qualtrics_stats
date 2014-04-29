@@ -15,6 +15,7 @@ gen_API_key adds to the db and prints a new random API_key.
 
 Generate and cron options:
   --override=FILE  Read the csv from a file instad of from the API
+                   PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
 
 Serve options:
   --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
@@ -55,3 +56,7 @@ if arguments['cron']:
 if arguments['gen_API_key']:
     from .db import gen_API_key
     print(gen_API_key())
+
+if arguments['serve']:
+    from .server import serve
+    serve(arguments['--listen'])
