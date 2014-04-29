@@ -2,9 +2,9 @@
 
 Usage:
   qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  qualtrics_stats cron [--override=<file>] [--db=<conn-string>]
-  qualtrics_stats serve [--override=<file>] [--db=<conn-string>] [--listen=<addr>]
-  qualtrics_stats gen_API_key [--db=<conn-string>]
+  qualtrics_stats cron [--override=<file>]
+  qualtrics_stats serve [--override=<file>]
+  qualtrics_stats gen_API_key
   qualtrics_stats (-h | --help)
   qualtrics_stats --version
 
@@ -16,12 +16,6 @@ gen_API_key adds to the db and prints a new random API_key.
 Generation options:
   --override=FILE  Read the csv from a file instad of from the API
                    PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
-
-Server options:
-  --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
-
-Database options:
-  --db=CONN_STR    A SQLAlchemy connection string [default: sqlite:///qualtrics_stats.db]
 
 General options:
   -h --help        Show this screen.
@@ -38,11 +32,12 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s [%(levelname)s] %(message)s')
 
 
-arguments = docopt(__doc__, version='Qualtrics Stats 0.3.2')
+arguments = docopt(__doc__, version='Qualtrics Stats 0.4.0')
 
 if arguments['cron'] or arguments['serve'] or arguments['gen_API_key']:
     from .db import init_db
-    init_db(arguments['--db'])
+    from .config import DB_CONN_STRING
+    init_db(DB_CONN_STRING)
 
 if arguments['generate'] or arguments['cron'] or arguments['serve']:
     from . import generate
@@ -65,7 +60,8 @@ if arguments['cron']:
 
 if arguments['serve']:
     from .server import serve
-    serve(arguments['--listen'])
+    from .config import SERVER_LISTEN_ADDR
+    serve(SERVER_LISTEN_ADDR)
 
 if arguments['gen_API_key']:
     from .db import gen_API_key
