@@ -1,6 +1,3 @@
-#!/usr/bin/env python3.3
-# -*- coding:utf-8 -*-
-
 import xml.etree.ElementTree as ET
 import requests
 import csv

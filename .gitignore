@@ -54,3 +54,5 @@ docs/_build/
 
 # virtualenv
 ENV/
+
+qualtrics_stats.db
