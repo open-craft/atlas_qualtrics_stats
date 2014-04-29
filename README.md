@@ -14,9 +14,9 @@ Generate and serve statistics for a Qualtrics survey.
 
 Usage:
   qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  qualtrics_stats cron [--override=<file>]
-  qualtrics_stats serve [--listen=<addr>]
-  qualtrics_stats gen_API_key
+  qualtrics_stats cron [--override=<file>] [--db=<conn-string>]
+  qualtrics_stats serve [--override=<file>] [--db=<conn-string>] [--listen=<addr>]
+  qualtrics_stats gen_API_key [--db=<conn-string>]
   qualtrics_stats (-h | --help)
   qualtrics_stats --version
 
@@ -25,12 +25,15 @@ cron is meant to be run by a cronjob, generates all statistics in the db;
 serve will run a web server exposing the REST API;
 gen_API_key adds to the db and prints a new random API_key.
 
-Generate and cron options:
+Generation options:
   --override=FILE  Read the csv from a file instad of from the API
                    PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
 
-Serve options:
+Server options:
   --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
+
+Database options:
+  --db=CONN_STR    A SQLAlchemy connection string [default: sqlite:///qualtrics_stats.db]
 
 General options:
   -h --help        Show this screen.

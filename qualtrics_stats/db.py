@@ -6,11 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, String
 
 
-# The db location is quite ugly, but it's supposed not to be definitive anyway
-engine = create_engine('sqlite:///qualtrics_stats.db')
-
-Session = sessionmaker(bind=engine)
-
+Session = sessionmaker()
 Base = declarative_base()
 
 
@@ -33,7 +29,10 @@ class Job(Base):
     last_run = Column(DateTime)
 
 
-Base.metadata.create_all(engine)
+def init_db(conn_string):
+    engine = create_engine(conn_string)
+    Session.configure(bind=engine)
+    Base.metadata.create_all(engine)
 
 
 def gen_API_key():

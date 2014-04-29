@@ -8,6 +8,9 @@ from collections import defaultdict, Counter
 from .running_average import RunningAverage
 
 
+csv_override = None
+
+
 class Question:
     pass
 
@@ -123,9 +126,7 @@ class SliderQuestion(Question):
 
 
 class QualtricsStats():
-    def __init__(self, survey_xml_spec, csv_override=None):
-        self.csv_override = csv_override
-
+    def __init__(self, survey_xml_spec):
         tree = ET.parse(survey_xml_spec)
 
         self.user = tree.getroot().attrib['user']
@@ -160,10 +161,10 @@ class QualtricsStats():
         r = requests.post(url, data=data, stream=True)
         csv_lines = r.iter_lines(decode_unicode=True)
 
-        if self.csv_override:
+        if csv_override:
             # For development and testing
             logging.info('Overriding csv source.')
-            csv_lines = self.csv_override
+            csv_lines = csv_override
 
         self.csv = csv.reader(csv_lines, strict=True)
         for i in range(2):

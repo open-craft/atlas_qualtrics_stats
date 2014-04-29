@@ -37,10 +37,10 @@ class TestRunningAverage(unittest.TestCase):
 
 class TestQualtricsStats(unittest.TestCase):
     def test_stats_result(self):
-        from ..generate import QualtricsStats
+        from .. import generate
+        generate.csv_override = open(os.path.join(TEST_DIR, 'edX_test.csv'))
 
-        QS = QualtricsStats(os.path.join(TEST_DIR, '../exampleSurvey.xml'),
-                            open(os.path.join(TEST_DIR, 'edX_test.csv')))
+        QS = generate.QualtricsStats(os.path.join(TEST_DIR, '../exampleSurvey.xml'))
         res = json.loads(QS.run())
 
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
@@ -58,10 +58,10 @@ class TestQualtricsStats(unittest.TestCase):
                     line_count += 1
                     yield line
 
-        from ..generate import QualtricsStats
+        from .. import generate
+        generate.csv_override = csv_lines_repetitor()
 
-        QS = QualtricsStats(os.path.join(TEST_DIR, '../exampleSurvey.xml'),
-                            csv_lines_repetitor())
+        QS = generate.QualtricsStats(os.path.join(TEST_DIR, '../exampleSurvey.xml'))
 
         start = time.time()
         json_output = QS.run()
@@ -79,3 +79,7 @@ class TestQualtricsStats(unittest.TestCase):
                 stat['average'] = ref['statistics'][n]['average'] = 1
 
         self.assertEqual(res, ref)
+
+    def tearDown(self):
+        from .. import generate
+        generate.csv_override = None
