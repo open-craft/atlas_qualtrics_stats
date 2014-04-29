@@ -14,13 +14,23 @@ Generate and serve statistics for a Qualtrics survey.
 
 Usage:
   qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  qualtrics_stats cron
-  qualtrics_stats serve
+  qualtrics_stats cron [--override=<file>]
+  qualtrics_stats serve [--listen=<addr>]
+  qualtrics_stats gen_API_key
   qualtrics_stats (-h | --help)
   qualtrics_stats --version
 
-Generate options:
+generate will run a job one-off;
+cron is meant to be run by a cronjob, generates all statistics in the db;
+serve will run a web server exposing the REST API;
+gen_API_key adds to the db and prints a new random API_key.
+
+Generate and cron options:
   --override=FILE  Read the csv from a file instad of from the API
+                   PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
+
+Serve options:
+  --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
 
 General options:
   -h --help        Show this screen.
