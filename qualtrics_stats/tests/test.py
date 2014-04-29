@@ -49,7 +49,7 @@ class CSVOverrideTestMixin():
         generate.csv_override = None
         self._csv_file.close()
 
-        super(CSVOverrideTestMixin, self).setUp()
+        super(CSVOverrideTestMixin, self).tearDown()
 
 
 class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
@@ -109,7 +109,7 @@ class DBTestMixin():
     def tearDown(self):
         os.remove('.qualtrics_stats_tests.db')
 
-        super(DBTestMixin, self).setUp()
+        super(DBTestMixin, self).tearDown()
 
     def new_tst_job(self, id="test", API_key="test", xml_spec=None):
         from ..db import Session, Job
