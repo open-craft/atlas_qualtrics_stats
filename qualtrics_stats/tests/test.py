@@ -98,6 +98,9 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
 
 class DBTestMixin():
     def setUp(self):
+        if os.path.isfile('.qualtrics_stats_tests.db'):
+            os.remove('.qualtrics_stats_tests.db')
+
         from ..db import init_db
         init_db('sqlite:///.qualtrics_stats_tests.db')
 
@@ -107,6 +110,29 @@ class DBTestMixin():
         os.remove('.qualtrics_stats_tests.db')
 
         super(DBTestMixin, self).setUp()
+
+    def new_tst_job(self, id="test", API_key="test", xml_spec=None):
+        from ..db import Session, Job
+        session = Session()
+
+        if xml_spec is None:
+            with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+                xml_spec = f.read()
+
+        job = Job(id=id, API_key=API_key,
+                  created=datetime.datetime.utcnow(),
+                  xml_spec=xml_spec)
+        session.add(job)
+        session.commit()
+
+    def get_tst_job(self, id="test", API_key="test"):
+        from ..db import Session, Job
+        session = Session()
+
+        job = session.query(Job).filter(Job.API_key == API_key,
+                                        Job.id == "test").one()
+
+        return job
 
 
 class TestGenAPIKey(DBTestMixin, unittest.TestCase):
@@ -121,21 +147,11 @@ class TestGenAPIKey(DBTestMixin, unittest.TestCase):
 
 class TestCron(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
     def test_cron_execution(self):
-        from ..db import Session, Job
-        session = Session()
-
-        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
-            xml_spec = f.read()
-
-        job = Job(id="test", API_key="test",
-                  created=datetime.datetime.utcnow(),
-                  xml_spec=xml_spec)
-        session.add(job)
-        session.commit()
+        self.new_tst_job()
 
         from ..cron import cron
         cron()
 
-        job = session.query(Job).filter(Job.id == "test").one()
+        job = self.get_tst_job()
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
             self.assertEqual(json.loads(job.value), json.load(f))
