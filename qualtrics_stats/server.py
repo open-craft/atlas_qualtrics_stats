@@ -60,10 +60,13 @@ def put_stat(stat_id):
     if not key:
         return 'API_key not valid', 403
 
+    overwritten = False
+
     session = Session()
     try:
         job = session.query(Job).filter(Job.API_key == key,
                                         Job.id == stat_id).one()
+        overwritten = True
     except NoResultFound:
         job = Job(API_key=key, id=stat_id)
         session.add(job)
@@ -79,7 +82,10 @@ def put_stat(stat_id):
 
     Thread(target=run_job, args=(stat_id, key)).start()
 
-    return 'Job successfully created and scheduled'
+    if overwritten:
+        return 'Job successfully overwritten and scheduled'
+    else:
+        return 'Job successfully created and scheduled'
 
 
 def serve(addr):

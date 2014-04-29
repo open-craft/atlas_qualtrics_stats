@@ -6,6 +6,7 @@ import time
 import os
 import glob
 import datetime
+import threading
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -155,3 +156,134 @@ class TestCron(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
         job = self.get_tst_job()
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
             self.assertEqual(json.loads(job.value), json.load(f))
+
+
+class TestServer(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
+    def setUp(self):
+        super(TestServer, self).setUp()
+
+        from ..server import app
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def test_bad_API_key(self):
+        rv = self.app.get('/stat/foo?API_key=not_existing')
+        self.assertEqual(rv.status_code, 403)
+        self.assertIn(b'API_key not valid', rv.get_data())
+
+        rv = self.app.put('/stat/foo?API_key=not_existing')
+        self.assertEqual(rv.status_code, 403)
+        self.assertIn(b'API_key not valid', rv.get_data())
+
+    def test_GET_404(self):
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        rv = self.app.get('/stat/foo?API_key=' + API_key)
+        self.assertEqual(rv.status_code, 404)
+        self.assertIn(b'No job with that stat-id found', rv.get_data())
+
+    def test_GET_404_wrong_API_key(self):
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        self.new_tst_job(id="test", API_key="test")
+
+        rv = self.app.get('/stat/test?API_key=' + API_key)
+        self.assertEqual(rv.status_code, 404)
+        self.assertIn(b'No job with that stat-id found', rv.get_data())
+
+    def test_GET_202(self):
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        self.new_tst_job(id="test", API_key=API_key)
+
+        rv = self.app.get('/stat/test?API_key=' + API_key)
+        self.assertEqual(rv.status_code, 202)
+        self.assertIn(b'Value is still not ready, try again later', rv.get_data())
+
+    def test_GET_200(self):
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        self.new_tst_job(id="test", API_key=API_key)
+
+        from ..cron import cron
+        cron()
+
+        rv = self.app.get('/stat/test?API_key=' + API_key)
+        self.assertEqual(rv.status_code, 200)
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            self.assertEqual(json.loads(rv.get_data().decode()), json.load(f))
+
+    def test_PUT_new(self):
+        threading.enumerate()[0]
+
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            rv = self.app.put('/stat/test?API_key=' + API_key, input_stream=f)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Job successfully created and scheduled', rv.get_data())
+
+        job = self.get_tst_job(API_key=API_key)
+        self.assertEqual(job.id, "test")
+        self.assertEqual(job.API_key, API_key)
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            self.assertEqual(job.xml_spec, f.read())
+        self.assertIsNone(job.value)
+        self.assertIsNone(job.last_run)
+        self.assertLess(datetime.datetime.utcnow() - job.created,
+                        datetime.timedelta(seconds=1))
+
+        start = time.time()
+        while time.time() - start < 60:
+            job = self.get_tst_job(API_key=API_key)
+            if job.value:
+                with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+                    self.assertEqual(json.loads(job.value), json.load(f))
+                self.assertLess(datetime.datetime.utcnow() - job.last_run,
+                                datetime.timedelta(seconds=2))
+                break
+            time.sleep(1)
+        else:
+            self.fail('The job did not get executed in 60s')
+
+    def test_PUT_existing(self):
+        threading.enumerate()[0]
+
+        from ..db import gen_API_key
+        API_key = gen_API_key()
+
+        self.new_tst_job(API_key=API_key, xml_spec='')
+        time.sleep(1)
+
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            rv = self.app.put('/stat/test?API_key=' + API_key, input_stream=f)
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn(b'Job successfully overwritten and scheduled', rv.get_data())
+
+        job = self.get_tst_job(API_key=API_key)
+        self.assertEqual(job.id, "test")
+        self.assertEqual(job.API_key, API_key)
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            self.assertEqual(job.xml_spec, f.read())
+        self.assertIsNone(job.value)
+        self.assertIsNone(job.last_run)
+        self.assertLess(datetime.datetime.utcnow() - job.created,
+                        datetime.timedelta(seconds=1))
+
+        start = time.time()
+        while time.time() - start < 60:
+            job = self.get_tst_job(API_key=API_key)
+            if job.value:
+                with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+                    self.assertEqual(json.loads(job.value), json.load(f))
+                self.assertLess(datetime.datetime.utcnow() - job.last_run,
+                                datetime.timedelta(seconds=2))
+                break
+            time.sleep(1)
+        else:
+            self.fail('The job did not get executed in 60s')
