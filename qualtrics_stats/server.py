@@ -19,8 +19,12 @@ def authenticate():
     return key
 
 
-def run_job(session, job):
-    logging.info('Running job {}...'.format(job.id))
+def run_job(stat_id, API_key):
+    logging.info('Running job {}...'.format(stat_id))
+
+    session = Session()
+    job = session.query(Job).filter(Job.API_key == API_key,
+                                    Job.id == stat_id).one()
 
     QS = QualtricsStats(BytesIO(job.xml_spec))
     job.value = QS.run()
@@ -73,7 +77,7 @@ def put_stat(stat_id):
 
     session.commit()
 
-    Thread(target=run_job, args=(session, job)).start()
+    Thread(target=run_job, args=(stat_id, key)).start()
 
     return 'Job successfully created and scheduled'
 
