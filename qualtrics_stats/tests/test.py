@@ -5,6 +5,7 @@ import json
 import time
 import os
 import glob
+import datetime
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -35,11 +36,25 @@ class TestRunningAverage(unittest.TestCase):
         self.assertAlmostEqual(A.average, true_avg)
 
 
-class TestQualtricsStats(unittest.TestCase):
+class CSVOverrideTestMixin():
+    def setUp(self):
+        from .. import generate
+        self._csv_file = open(os.path.join(TEST_DIR, 'edX_test.csv'))
+        generate.csv_override = self._csv_file
+
+        super(CSVOverrideTestMixin, self).setUp()
+
+    def tearDown(self):
+        from .. import generate
+        generate.csv_override = None
+        self._csv_file.close()
+
+        super(CSVOverrideTestMixin, self).setUp()
+
+
+class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
     def test_stats_result(self):
         from .. import generate
-        generate.csv_override = open(os.path.join(TEST_DIR, 'edX_test.csv'))
-
         QS = generate.QualtricsStats(os.path.join(TEST_DIR, '../exampleSurvey.xml'))
         res = json.loads(QS.run())
 
@@ -80,6 +95,47 @@ class TestQualtricsStats(unittest.TestCase):
 
         self.assertEqual(res, ref)
 
+
+class DBTestMixin():
+    def setUp(self):
+        from ..db import init_db
+        init_db('sqlite:///.qualtrics_stats_tests.db')
+
+        super(DBTestMixin, self).setUp()
+
     def tearDown(self):
-        from .. import generate
-        generate.csv_override = None
+        os.remove('.qualtrics_stats_tests.db')
+
+        super(DBTestMixin, self).setUp()
+
+
+class TestGenAPIKey(DBTestMixin, unittest.TestCase):
+    def test_new_API_key(self):
+        from ..db import Session, API_key, gen_API_key
+        session = Session()
+
+        new_API_key = gen_API_key()
+
+        self.assertEqual(session.query(API_key).filter(API_key.key == new_API_key).count(), 1)
+
+
+class TestCron(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
+    def test_cron_execution(self):
+        from ..db import Session, Job
+        session = Session()
+
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            xml_spec = f.read()
+
+        job = Job(id="test", API_key="test",
+                  created=datetime.datetime.utcnow(),
+                  xml_spec=xml_spec)
+        session.add(job)
+        session.commit()
+
+        from ..cron import cron
+        cron()
+
+        job = session.query(Job).filter(Job.id == "test").one()
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            self.assertEqual(json.loads(job.value), json.load(f))
