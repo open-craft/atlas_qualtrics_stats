@@ -91,3 +91,12 @@ def put_stat(stat_id):
 def serve(addr):
     host, port = addr.split(':')
     app.run(host, int(port))
+
+
+DB_SET_UP = False
+def wsgi_app(*args, **kwargs):
+    if not DB_SET_UP:
+        from .db import init_db
+        from .config import DB_CONN_STRING
+        init_db(DB_CONN_STRING)
+    return app(*args, **kwargs)
