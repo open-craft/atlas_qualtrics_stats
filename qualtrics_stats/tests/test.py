@@ -96,6 +96,29 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
 
         self.assertEqual(res, ref)
 
+    def test_malformed_xmls(self):
+        pairs = (
+            ('malformed.1.xml', 'XML parsing error: junk after document element: line 3, column 0'),
+            ('malformed.2.xml', 'survey tag missing'),
+            ('malformed.3.xml', 'qualtrics tag attribute "user" missing'),
+            ('malformed.4.xml', 'survey tag attribute "country_column" missing'),
+            ('malformed.5.xml', 'mrq tag attribute "title" missing'),
+            ('malformed.6.xml', 'mrq tag attribute "columns" format should be NN-NN'),
+            ('malformed.7.xml', 'slider tag attribute "title" missing'),
+            ('malformed.8.xml', 'rank tag should have at least two option children'),
+            ('malformed.9.xml', 'option tag attribute "column" missing'),
+            ('malformed.a.xml', 'slider tag attribute "column" should be a number'),
+            ('malformed.b.xml', 'option tag attribute "column" should be a number'),
+        )
+
+        for filename, error in pairs:
+            from .. import generate
+            with self.assertLogs(level='ERROR') as cm:
+                QS = generate.QualtricsStats(os.path.join(TEST_DIR, filename))
+            self.assertEqual(cm.output, ['ERROR:root:'+error])
+            res = json.loads(QS.run())
+            self.assertEqual(res['error'], error)
+
 
 class DBTestMixin():
     def setUp(self):

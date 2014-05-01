@@ -13,6 +13,10 @@ Each `API_key` owns the statistics jobs it created and can retrieve results only
 
 All methods will return **403** on a not existing `API_key`.
 
+## XML spec errors
+
+If the XML specification of a job is malformed, a GET request for that job will return a JSON object with only one key, `error`, containing the error message.
+
 ## Methods
 
 ### GET `/stat/<stat-id>`

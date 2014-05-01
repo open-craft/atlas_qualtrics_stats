@@ -17,6 +17,10 @@ class Question:
 
 class MRQQuestion(Question):
     def __init__(self, question_xml, country_column):
+        self.error = self._validate(question_xml)
+        if self.error is not None:
+            return
+
         self.general = RunningAverage()
         self.countries = defaultdict(RunningAverage)
 
@@ -25,6 +29,17 @@ class MRQQuestion(Question):
         self.title = question_xml.attrib['title']
 
         self.country_column = country_column
+
+    def _validate(self, question_xml):
+        if 'columns' not in question_xml.attrib:
+            return 'mrq tag attribute "columns" missing'
+        if 'title' not in question_xml.attrib:
+            return 'mrq tag attribute "title" missing'
+
+        if ('-' not in question_xml.attrib['columns'] or
+            not all(s.isdigit()
+                    for s in question_xml.attrib['columns'].split('-', 1))):
+            return 'mrq tag attribute "columns" format should be NN-NN'
 
     def __repr__(self):
         return "<MRQQuestion title='{}' start='{}' end='{}' avg='{}' count='{}'>".format(
@@ -53,6 +68,10 @@ class MRQQuestion(Question):
 
 class RankQuestion(Question):
     def __init__(self, question_xml, country_column):
+        self.error = self._validate(question_xml)
+        if self.error is not None:
+            return
+
         self.general = Counter()
         self.countries = defaultdict(Counter)
 
@@ -62,6 +81,20 @@ class RankQuestion(Question):
                             for o in question_xml)
 
         self.country_column = country_column
+
+    def _validate(self, question_xml):
+        if 'title' not in question_xml.attrib:
+            return 'rank tag attribute "title" missing'
+
+        if len(question_xml) < 2:
+            return 'rank tag should have at least two option children'
+        for o in question_xml:
+            if 'title' not in o.attrib:
+                return 'option tag attribute "title" missing'
+            if 'column' not in o.attrib:
+                return 'option tag attribute "column" missing'
+            if not o.attrib['column'].isdigit():
+                return 'option tag attribute "column" should be a number'
 
     def _get_top(self, counter):
         most_common = counter.most_common(1)
@@ -96,6 +129,10 @@ class RankQuestion(Question):
 
 class SliderQuestion(Question):
     def __init__(self, question_xml, country_column):
+        self.error = self._validate(question_xml)
+        if self.error is not None:
+            return
+
         self.general = RunningAverage()
         self.countries = defaultdict(RunningAverage)
 
@@ -103,6 +140,15 @@ class SliderQuestion(Question):
         self.title = question_xml.attrib['title']
 
         self.country_column = country_column
+
+    def _validate(self, question_xml):
+        if 'column' not in question_xml.attrib:
+            return 'slider tag attribute "column" missing'
+        if 'title' not in question_xml.attrib:
+            return 'slider tag attribute "title" missing'
+
+        if not question_xml.attrib['column'].isdigit():
+            return 'slider tag attribute "column" should be a number'
 
     def __repr__(self):
         return "<SliderQuestion title='{}' column='{}' avg='{}' count='{}'>".format(
@@ -127,7 +173,16 @@ class SliderQuestion(Question):
 
 class QualtricsStats():
     def __init__(self, survey_xml_spec):
-        tree = ET.parse(survey_xml_spec)
+        self.error = None
+
+        try:
+            tree = ET.parse(survey_xml_spec)
+        except ET.ParseError as e:
+            return self._report_error('XML parsing error: ' + str(e))
+
+        validation_error = self._validate(tree)
+        if validation_error is not None:
+            return self._report_error(validation_error)
 
         self.user = tree.getroot().attrib['user']
         self.password = tree.getroot().attrib['password']
@@ -135,17 +190,48 @@ class QualtricsStats():
         survey_xml = tree.getroot().find('survey')
         self.survey_id = survey_xml.attrib['qualtrics_survey_id']
         cc = int(survey_xml.attrib['country_column'])
-        self.questions = tuple(
-            MRQQuestion(q, cc) if q.tag == 'mrq' else
-            RankQuestion(q, cc) if q.tag == 'rank' else
-            SliderQuestion(q, cc) if q.tag == 'slider' else None
-            for q in survey_xml
-        )
+
+        self.questions = []
+        for q in survey_xml:
+            if q.tag == 'mrq':
+                mrq = MRQQuestion(q, cc)
+                if mrq.error is not None:
+                    return self._report_error(mrq.error)
+                self.questions.append(mrq)
+            elif q.tag == 'rank':
+                rank = RankQuestion(q, cc)
+                if rank.error is not None:
+                    return self._report_error(rank.error)
+                self.questions.append(rank)
+            elif q.tag == 'slider':
+                slider = SliderQuestion(q, cc)
+                if slider.error is not None:
+                    return self._report_error(slider.error)
+                self.questions.append(slider)
 
         logging.info('Loaded survey %s with %d questions',
                      self.survey_id, len(self.questions))
 
-    def get(self):
+    def _report_error(self, error):
+        logging.error(error)
+        self.error = error
+
+    def _validate(self, tree):
+        if 'user' not in tree.getroot().attrib:
+            return 'qualtrics tag attribute "user" missing'
+        if 'password' not in tree.getroot().attrib:
+            return 'qualtrics tag attribute "password" missing'
+
+        survey_xml = tree.getroot().find('survey')
+        if survey_xml is None:
+            return 'survey tag missing'
+
+        if 'qualtrics_survey_id' not in survey_xml.attrib:
+            return 'survey tag attribute "qualtrics_survey_id" missing'
+        if 'country_column' not in survey_xml.attrib:
+            return 'survey tag attribute "country_column" missing'
+
+    def _get(self):
         logging.info('Making Qualtrics API call...')
 
         url = 'https://new.qualtrics.com/Server/RestApi.php'
@@ -171,16 +257,19 @@ class QualtricsStats():
             next(self.csv)  # Strip title
 
     def run(self):
-        self.get()
+        if self.error:
+            return json.dumps({'error': self.error})
+
+        self._get()
 
         logging.info('Starting to fetch and parse data...')
         for csv_line in self.csv:
             for question in self.questions:
                 question.parse_line(csv_line)
 
-        return self.json()
+        return self._json()
 
-    def json(self):
+    def _json(self):
         logging.info('Dumping results to JSON...')
 
         return json.dumps({
