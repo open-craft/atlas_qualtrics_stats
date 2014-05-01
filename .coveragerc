@@ -1,4 +1,0 @@
-[run]
-source = 
-    qualtrics_stats.py
-    running_average.py

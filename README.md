@@ -10,15 +10,32 @@ Will run on Python 3.3 or 3.4.
 ## Usage
 
 ```
-Generate statistics for a Qualtrics survey.
+Generate and serve statistics for a Qualtrics survey.
 
 Usage:
-  qualtrics_stats.py [--override=<file>] <survey_xml_spec>
-  qualtrics_stats.py (-h | --help)
-  qualtrics_stats.py --version
+  qualtrics_stats generate [--override=<file>] <survey_xml_spec>
+  qualtrics_stats cron [--override=<file>] [--db=<conn-string>]
+  qualtrics_stats serve [--override=<file>] [--db=<conn-string>] [--listen=<addr>]
+  qualtrics_stats gen_API_key [--db=<conn-string>]
+  qualtrics_stats (-h | --help)
+  qualtrics_stats --version
 
-Options:
+generate will run a job one-off;
+cron is meant to be run by a cronjob, generates all statistics in the db;
+serve will run a web server exposing the REST API;
+gen_API_key adds to the db and prints a new random API_key.
+
+Generation options:
   --override=FILE  Read the csv from a file instad of from the API
+                   PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
+
+Server options:
+  --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
+
+Database options:
+  --db=CONN_STR    A SQLAlchemy connection string [default: sqlite:///qualtrics_stats.db]
+
+General options:
   -h --help        Show this screen.
   --version        Show version.
 ```
@@ -74,6 +91,10 @@ The average value of the slider will be shown.
 
 Each option has its own display title, that will be shown for the most selected one (i.e. "Rank order - Brazil: B").
 
+## API and database
+
+See [`API.md`](API.md) for the exposed REST API docs, and [`DATABASE.md`](DATABASE.md) for the SQLite database schema.
+
 ## Testing
 
 ```
@@ -84,12 +105,23 @@ nosetests --rednose --verbose
 Coverage:
 
 ```
-coverage run nosetests
-coverage report -m
+nosetests --with-coverage --cover-package=qualtrics_stats
 ```
 
 See also the following files for example input/output:
 
-* [`testSurvey.xml`](testSurvey.xml): `<survey_xml_spec>`
-* [`edX_test.csv`](edX_test.csv): API CSV input
-* [`edX_test.json`](edX_test.json): JSON output
+* [`exampleSurvey.xml`](qualtrics_stats/exampleSurvey.xml): `<survey_xml_spec>`
+* [`edX_test.csv`](qualtrics_stats/tests/edX_test.csv): API CSV input
+* [`edX_test.json`](qualtrics_stats/tests/edX_test.json): JSON output
+
+## Sample run
+
+```
+(atlas-stats)www-data@harvard-atlas:~/atlas_qualtrics_stats$ python3 -m qualtrics_stats generate --override=qualtrics_stats/tests/edX_test.csv qualtrics_stats/exampleSurvey.xml
+2014-04-23 01:24:13,404 [INFO] Loaded survey SV_0pQ0bjc02t8PNDT with 3 questions
+2014-04-23 01:24:13,405 [INFO] Making Qualtrics API call...
+2014-04-23 01:24:13,453 [INFO] Starting new HTTPS connection (1): new.qualtrics.com
+2014-04-23 01:24:14,284 [INFO] Overriding csv source.
+2014-04-23 01:24:14,287 [INFO] Starting to fetch and parse data...
+2014-04-23 01:24:14,288 [INFO] Dumping results to JSON...
+```
