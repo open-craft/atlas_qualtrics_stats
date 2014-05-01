@@ -13,3 +13,15 @@ location @atlas {
         uwsgi_pass unix:/tmp/uwsgi.sock;
 }
 ```
+
+# MySQL
+
+To deploy on MySQL, do the following:
+
+* create a `qualtrics_stats` database
+
+```
+mysql> CREATE DATABASE qualtrics_stats;
+```
+
+* set the `DB_CONN_STRING` in `config.py` to the MySQL one

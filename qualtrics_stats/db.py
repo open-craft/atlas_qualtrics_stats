@@ -12,7 +12,7 @@ Base = declarative_base()
 
 class API_key(Base):
     __tablename__ = 'API_KEYS'
-    key = Column(String, primary_key=True)
+    key = Column(String(50), primary_key=True)
 
     @classmethod
     def new(cls):
@@ -21,10 +21,10 @@ class API_key(Base):
 
 class Job(Base):
     __tablename__ = 'JOBS'
-    id = Column(String, primary_key=True)
-    API_key = Column(String, ForeignKey('API_KEYS.key'), primary_key=True)
-    xml_spec = Column(String)
-    value = Column(String)
+    id = Column(String(100), primary_key=True)
+    API_key = Column(String(50), ForeignKey('API_KEYS.key'), primary_key=True)
+    xml_spec = Column(Text)
+    value = Column(Text)
     created = Column(DateTime)
     last_run = Column(DateTime)
 
