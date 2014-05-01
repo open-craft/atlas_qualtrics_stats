@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from flask import Flask, request
 from threading import Thread
-from io import BytesIO
+from io import StringIO
 
 from .generate import QualtricsStats
 from .db import Session, Job, API_key
@@ -26,7 +26,7 @@ def run_job(stat_id, API_key):
     job = session.query(Job).filter(Job.API_key == API_key,
                                     Job.id == stat_id).one()
 
-    QS = QualtricsStats(BytesIO(job.xml_spec))
+    QS = QualtricsStats(StringIO(job.xml_spec))
     job.value = QS.run()
     job.last_run = datetime.datetime.utcnow()
 
@@ -75,7 +75,7 @@ def put_stat(stat_id):
         return 'Multiple jobs with that stat-id found', 500
 
     job.created = datetime.datetime.utcnow()
-    job.xml_spec = request.data
+    job.xml_spec = request.data.decode('utf-8')
     job.last_run = job.value = None
 
     session.commit()
@@ -94,6 +94,8 @@ def serve(addr):
 
 
 DB_SET_UP = False
+
+
 def wsgi_app(*args, **kwargs):
     if not DB_SET_UP:
         from .db import init_db

@@ -117,7 +117,7 @@ class DBTestMixin():
         session = Session()
 
         if xml_spec is None:
-            with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+            with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
                 xml_spec = f.read()
 
         job = Job(id=id, API_key=API_key,
@@ -231,7 +231,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
         job = self.get_tst_job(API_key=API_key)
         self.assertEqual(job.id, "test")
         self.assertEqual(job.API_key, API_key)
-        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
             self.assertEqual(job.xml_spec, f.read())
         self.assertIsNone(job.value)
         self.assertIsNone(job.last_run)
@@ -268,7 +268,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
         job = self.get_tst_job(API_key=API_key)
         self.assertEqual(job.id, "test")
         self.assertEqual(job.API_key, API_key)
-        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml'), mode='rb') as f:
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
             self.assertEqual(job.xml_spec, f.read())
         self.assertIsNone(job.value)
         self.assertIsNone(job.last_run)

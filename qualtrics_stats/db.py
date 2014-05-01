@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, DateTime, Text, String
 
 
 Session = sessionmaker()
