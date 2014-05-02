@@ -116,8 +116,8 @@ class QualtricsXBlock(XBlock):
         Get the JSON results of the statistics run from the server if the
         cache is expired
         """
-        if (not self.json_result
-             or datetime.datetime.now(pytz.utc) - self.last_fetched
+        if (not self.json_result or
+                datetime.datetime.now(pytz.utc) - self.last_fetched
                 < datetime.timedelta(minutes=10)):
             log.info('Fetching the results from the server')
             r = requests.get(self._API_url)
@@ -159,4 +159,3 @@ class QualtricsXBlock(XBlock):
         Scenarios displayed by the workbench. Load them from external (private) repository
         """
         return get_scenarios_from_path('templates/xml')
-

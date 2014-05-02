@@ -15,6 +15,7 @@ def load_resource(resource_path):
     resource_content = pkg_resources.resource_string(__name__, resource_path)
     return unicode(resource_content)
 
+
 def render_template(template_path, context={}):
     """
     Evaluate a template by resource path, applying the provided context
@@ -22,6 +23,7 @@ def render_template(template_path, context={}):
     template_str = load_resource(template_path)
     template = Template(template_str)
     return template.render(Context(context))
+
 
 def get_scenarios_from_path(scenarios_path, include_identifier=False):
     """
@@ -45,6 +47,7 @@ def get_scenarios_from_path(scenarios_path, include_identifier=False):
                 scenarios.append((identifier, title, load_resource(template_path)))
 
     return scenarios
+
 
 def load_scenarios_from_path(scenarios_path):
     """
