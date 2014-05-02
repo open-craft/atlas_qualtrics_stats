@@ -24,6 +24,8 @@ setup(
     ],
     install_requires=[
         'XBlock',
+        'requests',
+        'pytz'
     ],
     entry_points={
         'xblock.v1': [

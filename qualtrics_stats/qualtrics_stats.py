@@ -3,6 +3,8 @@
 import logging
 import uuid
 import datetime
+import requests
+import pytz
 
 from lxml import etree
 from StringIO import StringIO
@@ -28,11 +30,13 @@ class QualtricsXBlock(XBlock):
 
     server = String(help="The base URL of the box serving the statistics results",
                     default='http://localhost:8080', scope=Scope.content)
+    API_key = String(help="The API_key generated on the server",
+                     default='', scope=Scope.content)
     json_result = String(help="The cached statistics results",
-                         default='', scope=Scope.content)
+                         default='', scope=Scope.user_state_summary)
     last_fetched = DateTime(help="The last time json_result was fetched from server",
                             default=datetime.datetime.fromtimestamp(0),
-                            scope=Scope.content)
+                            scope=Scope.user_state_summary)
     url_name = String(help="Unique name of the current statistic sent to the server",
                       default='qualtrics-default', scope=Scope.content)
     xml_content = String(help="XML content", default='', scope=Scope.content)
@@ -42,6 +46,8 @@ class QualtricsXBlock(XBlock):
     def student_view(self, context=None):
         if not self.xml_content:
             return Fragment(u'Edit the block to start...')
+
+        self._get_result()
 
         fragment = Fragment(render_template('templates/html/qualtrics.html', {
             'self': self
@@ -87,6 +93,8 @@ class QualtricsXBlock(XBlock):
                 self.xml_spec = etree.tostring(q, encoding="utf8")
                 for key in root.attrib:
                     setattr(self, key, root.attrib[key])
+
+                self._put_spec()
             else:
                 response = {
                     'result': 'error',
@@ -95,6 +103,32 @@ class QualtricsXBlock(XBlock):
 
         log.debug(u'Response from Studio: {}'.format(response))
         return response
+
+    @property
+    def _API_url(self):
+        return '{}/stat/{}?API_key={}'.format(self.server, self.url_name,
+                                              self.API_key)
+
+    def _get_result(self):
+        """
+        Get the JSON results of the statistics run from the server if the
+        cache is expired
+        """
+        if (not self.json_result
+             or datetime.datetime.now(pytz.utc) - self.last_fetched
+                < datetime.timedelta(minutes=10)):
+            log.info('Fetching the results from the server')
+            r = requests.get(self._API_url)
+            if r.status_code == 200:
+                self.json_result = r.text
+                self.last_fetched = datetime.datetime.now(pytz.utc)
+
+    def _put_spec(self):
+        """
+        Upload the XML spec to the processing server
+        """
+        log.info('Pushing the spec to the server')
+        requests.put(self._API_url, data=self.xml_spec)
 
     @property
     def default_xml_content(self):
