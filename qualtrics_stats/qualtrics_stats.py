@@ -13,7 +13,7 @@ from xblock.core import XBlock
 from xblock.fields import Scope, String, DateTime
 from xblock.fragment import Fragment
 
-from .utils import load_resource, render_template, get_scenarios_from_path
+from .utils import render_template, get_scenarios_from_path
 
 
 # Globals ###########################################################
@@ -64,8 +64,10 @@ class QualtricsXBlock(XBlock):
             'self': self,
             'xml_content': self.xml_content or self.default_xml_content,
         }))
-        fragment.add_javascript(load_resource('public/js/qualtrics_edit.js'))
-        fragment.add_css(load_resource('public/css/qualtrics_edit.css'))
+        fragment.add_javascript(self.runtime.local_resource_url(
+            'public/js/qualtrics_edit.js'))
+        fragment.add_css(self.runtime.local_resource_url(
+            'public/css/qualtrics_edit.css'))
 
         fragment.initialize_js('QualtricsEditXBlock')
 
