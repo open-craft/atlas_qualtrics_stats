@@ -1,4 +1,4 @@
-"""Setup for qualtrics_stats XBlock."""
+"""Setup for atlas XBlock."""
 
 import os
 from setuptools import setup
@@ -16,11 +16,11 @@ def package_data(pkg, root_list):
 
 
 setup(
-    name='qualtrics-stats-xblock',
+    name='xblock-atlas',
     version='0.1',
-    description='XBlock - Qualtrics statistics',
+    description='XBlock - Atlas statistics',
     packages=[
-        'qualtrics_stats',
+        'atlas',
     ],
     install_requires=[
         'XBlock',
@@ -29,8 +29,8 @@ setup(
     ],
     entry_points={
         'xblock.v1': [
-            'qualtrics_stats = qualtrics_stats:QualtricsXBlock',
+            'atlas = atlas:AtlasXBlock',
         ]
     },
-    package_data=package_data("qualtrics_stats", ["public", "templates"]),
+    package_data=package_data("atlas", ["public", "templates"]),
 )

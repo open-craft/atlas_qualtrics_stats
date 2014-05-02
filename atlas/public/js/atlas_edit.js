@@ -1,4 +1,4 @@
-function QualtricsEditXBlock(runtime, element) {
+function AtlasEditXBlock(runtime, element) {
     var xmlEditorTextarea = $('.block-xml-editor', element),
         xmlEditor = CodeMirror.fromTextArea(xmlEditorTextarea[0], { mode: 'xml' });
 

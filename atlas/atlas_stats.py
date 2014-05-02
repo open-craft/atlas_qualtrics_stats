@@ -23,9 +23,9 @@ log = logging.getLogger(__name__)
 
 # Classes ###########################################################
 
-class QualtricsXBlock(XBlock):
+class AtlasXBlock(XBlock):
     """
-    An XBlock showing the results from a Qualtrics statistics server, cached.
+    An XBlock showing the results from a external statistics server, cached.
     """
 
     server = String(help="The base URL of the box serving the statistics results",
@@ -38,7 +38,7 @@ class QualtricsXBlock(XBlock):
                             default=datetime.datetime.fromtimestamp(0),
                             scope=Scope.user_state_summary)
     url_name = String(help="Unique name of the current statistic sent to the server",
-                      default='qualtrics-default', scope=Scope.content)
+                      default='atlas-default', scope=Scope.content)
     xml_content = String(help="XML content", default='', scope=Scope.content)
     xml_spec = String(help="XML specification to send to the server",
                       default='', scope=Scope.content)
@@ -49,7 +49,7 @@ class QualtricsXBlock(XBlock):
 
         self._get_result()
 
-        fragment = Fragment(render_template('templates/html/qualtrics.html', {
+        fragment = Fragment(render_template('templates/html/atlas.html', {
             'self': self
         }))
 
@@ -60,16 +60,16 @@ class QualtricsXBlock(XBlock):
         Editing view in Studio
         """
         fragment = Fragment()
-        fragment.add_content(render_template('templates/html/qualtrics_edit.html', {
+        fragment.add_content(render_template('templates/html/atlas_edit.html', {
             'self': self,
             'xml_content': self.xml_content or self.default_xml_content,
         }))
         fragment.add_javascript(self.runtime.local_resource_url(
-            'public/js/qualtrics_edit.js'))
+            'public/js/atlas_edit.js'))
         fragment.add_css(self.runtime.local_resource_url(
-            'public/css/qualtrics_edit.css'))
+            'public/css/atlas_edit.css'))
 
-        fragment.initialize_js('QualtricsEditXBlock')
+        fragment.initialize_js('AtlasEditXBlock')
 
         return fragment
 
@@ -134,7 +134,7 @@ class QualtricsXBlock(XBlock):
 
     @property
     def default_xml_content(self):
-        return render_template('templates/xml/qualtrics_stats_default.xml', {
+        return render_template('templates/xml/atlas_default.xml', {
             'self': self,
             'url_name': self.url_name_with_default,
         })
@@ -148,8 +148,8 @@ class QualtricsXBlock(XBlock):
         a unique default value - this property gives either the set value, or if none is set
         a randomized default value
         """
-        if self.url_name == 'qualtrics-default':
-            return 'qualtrics-{}'.format(uuid.uuid4())
+        if self.url_name == 'atlas-default':
+            return 'atlas-{}'.format(uuid.uuid4())
         else:
             return self.url_name
 
