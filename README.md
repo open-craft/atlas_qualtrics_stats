@@ -1,5 +1,6 @@
-
 # Qualtrics statistics generator
+
+*See the [`xblock` branch](https://github.com/FiloSottile/atlas_qualtrics_stats/tree/xblock) for the XBlock*
 
 ## Installation
 
