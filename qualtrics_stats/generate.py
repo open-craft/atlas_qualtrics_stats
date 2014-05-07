@@ -62,7 +62,9 @@ class MRQQuestion(Question):
             'type': 'mrq',
             'title': self.title,
             'average': self.general.average,
-            'countries': dict((k, v.average) for k, v in self.countries.items())
+            'countries': dict((k, v.average) for k, v in self.countries.items()),
+            'max': self.end - self.start + 1,
+            'min': 0
         }
 
 
@@ -141,6 +143,12 @@ class SliderQuestion(Question):
 
         self.country_column = country_column
 
+        self.max, self.min = None, None
+        if 'max' in question_xml.attrib:
+            self.max = int(question_xml.attrib['max'])
+        if 'min' in question_xml.attrib:
+            self.min = int(question_xml.attrib['min'])
+
     def _validate(self, question_xml):
         if 'column' not in question_xml.attrib:
             return 'slider tag attribute "column" missing'
@@ -149,6 +157,11 @@ class SliderQuestion(Question):
 
         if not question_xml.attrib['column'].isdigit():
             return 'slider tag attribute "column" should be a number'
+
+        if 'max' in question_xml.attrib and not question_xml.attrib['max'].isdigit():
+            return 'slider tag attribute "max" should be a number'
+        if 'min' in question_xml.attrib and not question_xml.attrib['min'].isdigit():
+            return 'slider tag attribute "min" should be a number'
 
     def __repr__(self):
         return "<SliderQuestion title='{}' column='{}' avg='{}' count='{}'>".format(
@@ -167,7 +180,9 @@ class SliderQuestion(Question):
             'type': 'slider',
             'title': self.title,
             'average': self.general.average,
-            'countries': dict((k, v.average) for k, v in self.countries.items())
+            'countries': dict((k, v.average) for k, v in self.countries.items()),
+            'max': self.max if self.max is not None else self.general.max,
+            'min': self.min if self.min is not None else self.general.min,
         }
 
 
