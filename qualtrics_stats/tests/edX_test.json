@@ -7,7 +7,9 @@
             }, 
             "title": "MRQ", 
             "type": "mrq", 
-            "average": 1.6666666666666665
+            "average": 1.6666666666666665,
+            "max": 4,
+            "min": 0
         }, 
         {
             "countries": {
@@ -16,7 +18,9 @@
             }, 
             "title": "Slider", 
             "type": "slider", 
-            "average": 19.333333333333332
+            "average": 19.333333333333332,
+            "max": 100,
+            "min": 0
         }, 
         {
             "countries": {

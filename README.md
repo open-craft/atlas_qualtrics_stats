@@ -74,10 +74,12 @@ The average number of selected answers will be shown.
 ### Slider
 
 ```xml
-<slider title="Slider" column="15" />
+<slider title="Slider" column="15" max="100" min="0" />
 ```
 
 The average value of the slider will be shown.
+
+To scale the gradient color it is recommended that max and min values are specified, otherwise they will be the highest and lowest answer given overall.
 
 ### Rank order
 

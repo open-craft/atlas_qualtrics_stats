@@ -9,6 +9,8 @@ class AbstractRunningAverage():
     def __init__(self):
         self._average = 0.0
         self._count = 0
+        self._max = 0
+        self._min = 0
 
     @property
     def average(self):
@@ -20,6 +22,16 @@ class AbstractRunningAverage():
         """Get the number of averaged values."""
         return self._count
 
+    @property
+    def max(self):
+        """Get the maximum value encountered."""
+        return self._max
+
+    @property
+    def min(self):
+        """Get the minimum value encountered."""
+        return self._min
+
 
 class AdaptiveRunningAverage(AbstractRunningAverage):
     def add(self, value):
@@ -27,12 +39,18 @@ class AdaptiveRunningAverage(AbstractRunningAverage):
             (value / (self._count + 1))
         self._count += 1
 
+        self._max = max(self._max, value)
+        self._min = min(self._min, value) if self._min else value
+
 
 class DiffRunningAverage(AbstractRunningAverage):
     # This one is slightly faster and simpler
     def add(self, value):
         self._count += 1
         self._average += (value - self._average) / self._count
+
+        self._max = max(self._max, value)
+        self._min = min(self._min, value) if self._min else value
 
 RunningAverage = DiffRunningAverage
 

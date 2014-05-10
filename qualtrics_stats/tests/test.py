@@ -7,6 +7,7 @@ import os
 import glob
 import datetime
 import threading
+import io
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -26,15 +27,19 @@ class TestRunningAverage(unittest.TestCase):
         from ..running_average import RunningAverage
 
         random.seed('running_average_test')  # to make the test deterministic
-        values = [random.randint(0, 10) for _ in range(1000000)]
+        values = [random.randint(1, 10) for _ in range(1000000)]
 
         true_avg = float(sum(values))/len(values)
+        true_max = max(values)
+        true_min = min(values)
 
         A = RunningAverage()
         for v in values:
             A.add(v)
 
         self.assertAlmostEqual(A.average, true_avg)
+        self.assertEqual(A.max, true_max)
+        self.assertEqual(A.min, true_min)
 
 
 class CSVOverrideTestMixin():
@@ -61,6 +66,20 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
 
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
             self.assertEqual(res, json.load(f))
+
+    def test_slider_auto_min_max_result(self):
+        from .. import generate
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
+            xml = f.read()
+        xml = xml.replace('max="100" min="0"', '')
+        QS = generate.QualtricsStats(io.StringIO(xml))
+        res = json.loads(QS.run())
+
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            js_test = json.load(f)
+            js_test["statistics"][1]["max"] = 30
+            js_test["statistics"][1]["min"] = 6
+            self.assertEqual(res, js_test)
 
     def test_100K_lines_performance(self):
         def csv_lines_repetitor():
@@ -109,6 +128,7 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             ('malformed.9.xml', 'option tag attribute "column" missing'),
             ('malformed.a.xml', 'slider tag attribute "column" should be a number'),
             ('malformed.b.xml', 'option tag attribute "column" should be a number'),
+            ('malformed.c.xml', 'slider tag attribute "max" should be a number'),
         )
 
         for filename, error in pairs:
