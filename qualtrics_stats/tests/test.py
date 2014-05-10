@@ -67,6 +67,29 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
             self.assertEqual(res, json.load(f))
 
+    def test_no_mrq_ignore(self):
+        from .. import generate
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
+            xml = f.read()
+        xml = xml.replace('ignore_column="23"', '')
+        QS = generate.QualtricsStats(io.StringIO(xml))
+        res = json.loads(QS.run())
+
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            js_test = json.load(f)
+            js_test["statistics"][0] = {
+                "countries": {
+                    "Tuvalu": 1.5,
+                    "Brazil": 2.0
+                },
+                "title": "MRQ",
+                "type": "mrq",
+                "average": 1.25,
+                "max": 4,
+                "min": 0
+            }
+            self.assertEqual(res, js_test)
+
     def test_slider_auto_min_max_result(self):
         from .. import generate
         with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
@@ -129,6 +152,7 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             ('malformed.a.xml', 'slider tag attribute "column" should be a number'),
             ('malformed.b.xml', 'option tag attribute "column" should be a number'),
             ('malformed.c.xml', 'slider tag attribute "max" should be a number'),
+            ('malformed.d.xml', 'mrq tag attribute "ignore_column" should be a number'),
         )
 
         for filename, error in pairs:

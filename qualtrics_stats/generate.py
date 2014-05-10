@@ -28,6 +28,10 @@ class MRQQuestion(Question):
                                 question_xml.attrib['columns'].split('-', 1))
         self.title = question_xml.attrib['title']
 
+        self.ignore = None
+        if 'ignore_column' in question_xml.attrib:
+            self.ignore = int(question_xml.attrib['ignore_column'])
+
         self.country_column = country_column
 
     def _validate(self, question_xml):
@@ -40,6 +44,8 @@ class MRQQuestion(Question):
             not all(s.isdigit()
                     for s in question_xml.attrib['columns'].split('-', 1))):
             return 'mrq tag attribute "columns" format should be NN-NN'
+        if ('ignore_column' in question_xml.attrib and not question_xml.attrib['ignore_column'].isdigit()):
+            return 'mrq tag attribute "ignore_column" should be a number'
 
     def __repr__(self):
         return "<MRQQuestion title='{}' start='{}' end='{}' avg='{}' count='{}'>".format(
@@ -48,6 +54,10 @@ class MRQQuestion(Question):
     def parse_line(self, csv_line):
         # Skip unanswered question
         if csv_line[self.start] == '99999':
+            return
+
+        # Skip "I'm not sure" answer
+        if self.ignore is not None and csv_line[self.ignore] != '0':
             return
 
         n = sum(1 for c in csv_line[self.start:self.end + 1] if c != '0')

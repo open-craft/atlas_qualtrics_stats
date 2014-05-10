@@ -2,7 +2,7 @@
 <survey qualtrics_survey_id="SV_0pQ0bjc02t8PNDT" country_column="11">
   <!-- country_column, column and columns are zero-indexed -->
   <!-- columns: both start-end included -->
-  <mrq title="MRQ" columns="18-21" ignore_column="23" />
+  <mrq title="MRQ" columns="18-21" ignore_column="a" />
   <slider title="Slider" column="15" max="100" min="0" />
   <rank title="Rank order">
     <option title="A" column="12" />

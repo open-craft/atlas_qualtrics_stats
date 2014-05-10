@@ -64,10 +64,14 @@ All the column numbers are 0-indexed.
 ### MRQ
 
 ```xml
-<mrq title="MRQ" columns="18-21" />
+<mrq title="MRQ" columns="18-21" ignore_column="23" />
 ```
 
-The `columns` attribute is in the format `START-END` and specifies the columns holding all the possible answers (*"None of these"* excluded), `START` and `END` included. (In the example above the MRQ has 4 possible answers, 18, 19, 20, 21)
+The `columns` attribute is in the format `START-END` and specifies the columns holding all the possible answers, `START` and `END` included. (In the example above the MRQ has 4 possible answers, 18, 19, 20, 21)
+
+If you have, as recommended, a *"None of these"* option, do not include it in `columns`.
+
+If you have a *"I'm not sure"* option, set it in `ignore_column`, so that the answer is not counted as a 0 (it will not be counted at all).
 
 The average number of selected answers will be shown.
 
