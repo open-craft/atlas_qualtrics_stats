@@ -42,13 +42,18 @@ General options:
 
 ## XML survey specification
 
-A XML specification of a Qualtrics statistics is at the top a `qualtrics` tag with two attributes, `user` and `password`, the login details for the Qualtrics account, and inside that a `survey` tag with the following attributes:
+A XML specification of a Qualtrics statistic is at the top a `qualtrics` tag with two attributes:
+
+* `user`: the internal username for access to the API
+* `password`: the API Token as generated from Account Settings
+
+And inside that a `survey` tag with the following attributes:
 
 * `qualtrics_survey_id`: the Qualtrics ID for the survey, it comes in this format `SV_*`
 * `country_column`: the 0-indexed column (of the CSV) holding the Country answer
 
 ```xml
-<qualtrics user="xx@filippo.io" password="XXXXXXXXXXXX">
+<qualtrics user="XXXXXXXXXXXX#xxxxxx" password="XXXXXXXXXXXX">
 	<survey qualtrics_survey_id="SV_0pQ0bjc02t8PNDT" country_column="11">
 		...
 	</survey>
