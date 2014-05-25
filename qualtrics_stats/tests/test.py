@@ -11,6 +11,8 @@ import io
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
+unittest.TestCase.maxDiff = None
+
 
 class TestCodeFormat(unittest.TestCase):
     def test_pep8_conformance(self):
@@ -27,7 +29,7 @@ class TestRunningAverage(unittest.TestCase):
         from ..running_average import RunningAverage
 
         random.seed('running_average_test')  # to make the test deterministic
-        values = [random.randint(1, 10) for _ in range(1000000)]
+        values = [random.uniform(1, 10) for _ in range(1000000)]
 
         true_avg = float(sum(values))/len(values)
         true_max = max(values)
@@ -71,6 +73,8 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
         from .. import generate
         with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
             xml = f.read()
+        if 'ignore_column="23"' not in xml:
+            self.fail('exampleSurvey.xml changed, test does not apply anymore')
         xml = xml.replace('ignore_column="23"', '')
         QS = generate.QualtricsStats(io.StringIO(xml))
         res = json.loads(QS.run())
@@ -94,7 +98,9 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
         from .. import generate
         with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
             xml = f.read()
-        xml = xml.replace('max="100" min="0"', '')
+        if 'max="100.0" min="0"' not in xml:
+            self.fail('exampleSurvey.xml changed, test does not apply anymore')
+        xml = xml.replace('max="100.0" min="0"', '')
         QS = generate.QualtricsStats(io.StringIO(xml))
         res = json.loads(QS.run())
 

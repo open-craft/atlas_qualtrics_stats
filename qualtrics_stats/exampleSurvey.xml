@@ -3,7 +3,7 @@
   <!-- country_column, column and columns are zero-indexed -->
   <!-- columns: both start-end included -->
   <mrq title="MRQ" columns="18-21" ignore_column="23" />
-  <slider title="Slider" column="15" max="100" min="0" />
+  <slider title="Slider" column="15" max="100.0" min="0" />
   <rank title="Rank order">
     <option title="A" column="12" />
     <option title="B" column="13" />

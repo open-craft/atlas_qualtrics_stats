@@ -155,9 +155,9 @@ class SliderQuestion(Question):
 
         self.max, self.min = None, None
         if 'max' in question_xml.attrib:
-            self.max = int(question_xml.attrib['max'])
+            self.max = float(question_xml.attrib['max'])
         if 'min' in question_xml.attrib:
-            self.min = int(question_xml.attrib['min'])
+            self.min = float(question_xml.attrib['min'])
 
     def _validate(self, question_xml):
         if 'column' not in question_xml.attrib:
@@ -168,9 +168,9 @@ class SliderQuestion(Question):
         if not question_xml.attrib['column'].isdigit():
             return 'slider tag attribute "column" should be a number'
 
-        if 'max' in question_xml.attrib and not question_xml.attrib['max'].isdigit():
+        if 'max' in question_xml.attrib and not question_xml.attrib['max'].replace('.', '', 1).isdigit():
             return 'slider tag attribute "max" should be a number'
-        if 'min' in question_xml.attrib and not question_xml.attrib['min'].isdigit():
+        if 'min' in question_xml.attrib and not question_xml.attrib['min'].replace('.', '', 1).isdigit():
             return 'slider tag attribute "min" should be a number'
 
     def __repr__(self):
@@ -180,7 +180,7 @@ class SliderQuestion(Question):
     def parse_line(self, csv_line):
         country = csv_line[self.country_column]
         if csv_line[self.column] != '99999':  # Skip unanswered sliders
-            n = int(csv_line[self.column])
+            n = float(csv_line[self.column])
             self.general.add(n)
             if country != '99999':
                 self.countries[country].add(n)
