@@ -11,11 +11,8 @@
   </rank>
 </survey>
 <country_messages>
-  <country name="Côte d'Ivoire">
-    Some arbitrary text ✓
-  </country>
-  <country name="Italy">
+  <something name="Italy">
     or <code>HTML</code>
-  </country>
+  </something>
 </country_messages>
 </qualtrics>

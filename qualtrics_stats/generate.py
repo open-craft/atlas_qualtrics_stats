@@ -234,6 +234,15 @@ class QualtricsStats():
                     return self._report_error(slider.error)
                 self.questions.append(slider)
 
+        self.country_messages = {}
+        countries_xml = tree.getroot().find('country_messages')
+        if countries_xml is not None:
+            for c in countries_xml:
+                name = c.attrib["name"]
+                c.tag = 'div'
+                c.attrib = {}
+                self.country_messages[name] = ET.tostring(c, 'unicode')
+
         logging.info('Loaded survey %s with %d questions',
                      self.survey_id, len(self.questions))
 
@@ -255,6 +264,14 @@ class QualtricsStats():
             return 'survey tag attribute "qualtrics_survey_id" missing'
         if 'country_column' not in survey_xml.attrib:
             return 'survey tag attribute "country_column" missing'
+
+        countries_xml = tree.getroot().find('country_messages')
+        if countries_xml is not None:
+            for c in countries_xml:
+                if c.tag != 'country':
+                    return 'unknown tag inside the "country_messages" tag'
+                if 'name' not in c.attrib:
+                    return 'country tag missing the "name" attribute'
 
     def _get(self):
         logging.info('Making Qualtrics API call...')
@@ -300,5 +317,6 @@ class QualtricsStats():
 
         return json.dumps({
             'survey_qualtrics_id': self.survey_id,
-            'statistics': [q.as_dict() for q in self.questions]
+            'statistics': [q.as_dict() for q in self.questions],
+            'country_messages': self.country_messages,
         }, indent=4)

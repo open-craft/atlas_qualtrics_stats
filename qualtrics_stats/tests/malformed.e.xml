@@ -11,8 +11,8 @@
   </rank>
 </survey>
 <country_messages>
-  <country name="Côte d'Ivoire">
-    Some arbitrary text ✓
+  <country>
+    Some arbitrary text
   </country>
   <country name="Italy">
     or <code>HTML</code>
