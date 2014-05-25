@@ -106,6 +106,16 @@ Each option has its own display title, that will be shown for the most selected 
 
 See [`API.md`](API.md) for the exposed REST API docs, and [`DATABASE.md`](DATABASE.md) for the SQLite database schema.
 
+## Notes on questionnaires
+
+There are a small number of requirements/suggestions for Qualtrics questionnaires editing:
+
+* There must be one "What is your country?" MRQ with the options listed in [`countries.txt`](countries.txt)
+* MRQ answers should be required and "None of these" + "I'm not sure" options should be offered
+* Slider and rank answers should be requested (so that the user will have to confirm to leave them blank)
+* Short titles will fit best
+* There must not be answers with text "0" or "99999"
+
 ## Testing
 
 ```
