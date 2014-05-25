@@ -259,18 +259,19 @@ class QualtricsStats():
     def _get(self):
         logging.info('Making Qualtrics API call...')
 
-        url = 'https://new.qualtrics.com/Server/RestApi.php'
+        url = 'https://survey.qualtrics.com/WRAPI/ControlPanel/api.php'
         data = {
-            'Request': 'getResponseData',
+            'Request': 'getLegacyResponseData',
             'User': self.user,
-            'Password': self.password,
+            'Token': self.password,
             'SurveyID': self.survey_id,
             'Format': 'CSV',
             'Labels': 1,
-            'UnansweredRecode': 99999
+            'UnansweredRecode': 99999,
+            'Version': '2.3',
         }
         r = requests.post(url, data=data, stream=True)
-        csv_lines = r.iter_lines(decode_unicode=True)
+        csv_lines = (l.decode("utf-8-sig") for l in r.iter_lines())
 
         if csv_override:
             # For development and testing
