@@ -102,6 +102,23 @@ To scale the gradient color it is recommended that max and min values are specif
 
 Each option has its own display title, that will be shown for the most selected one (i.e. "Rank order - Brazil: B").
 
+### Custom countries HTML
+
+The `<qualtrics>` tag can also (optionally) contain a `country_messages` tag, to show a custom message on countries summary pages.
+
+For each country, add a `<country>` tag to the `country_messages` tag, with a `name` attribute spelled like in the [`countries.txt`](countries.txt) list, and inside that put arbitrary HTML.
+
+```xml
+<country_messages>
+  <country name="Côte d'Ivoire">
+    Some arbitrary text ✓
+  </country>
+  <country name="Italy">
+    or <code>HTML</code>
+  </country>
+</country_messages>
+```
+
 ## API and database
 
 See [`API.md`](API.md) for the exposed REST API docs, and [`DATABASE.md`](DATABASE.md) for the SQLite database schema.
@@ -131,7 +148,7 @@ nosetests --with-coverage --cover-package=qualtrics_stats
 
 See also the following files for example input/output:
 
-* [`exampleSurvey.xml`](qualtrics_stats/exampleSurvey.xml): `<survey_xml_spec>`
+* [`exampleSurvey.xml`](qualtrics_stats/exampleSurvey.xml): XML survey specification
 * [`edX_test.csv`](qualtrics_stats/tests/edX_test.csv): API CSV input
 * [`edX_test.json`](qualtrics_stats/tests/edX_test.json): JSON output
 

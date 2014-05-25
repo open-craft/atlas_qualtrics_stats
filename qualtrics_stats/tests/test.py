@@ -8,6 +8,7 @@ import glob
 import datetime
 import threading
 import io
+import re
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -159,6 +160,8 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             ('malformed.b.xml', 'option tag attribute "column" should be a number'),
             ('malformed.c.xml', 'slider tag attribute "max" should be a number'),
             ('malformed.d.xml', 'mrq tag attribute "ignore_column" should be a number'),
+            ('malformed.e.xml', 'country tag missing the "name" attribute'),
+            ('malformed.f.xml', 'unknown tag inside the "country_messages" tag'),
         )
 
         for filename, error in pairs:
@@ -168,6 +171,19 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             self.assertEqual(cm.output, ['ERROR:root:'+error])
             res = json.loads(QS.run())
             self.assertEqual(res['error'], error)
+
+    def test_no_country_messages(self):
+        from .. import generate
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
+            xml = f.read()
+        xml = re.sub('(?s)<country_messages>.*</country_messages>', '', xml)
+        QS = generate.QualtricsStats(io.StringIO(xml))
+        res = json.loads(QS.run())
+
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            js_test = json.load(f)
+            js_test["country_messages"] = {}
+            self.assertEqual(res, js_test)
 
 
 class DBTestMixin():

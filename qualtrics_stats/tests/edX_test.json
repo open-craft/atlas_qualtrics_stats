@@ -19,8 +19,8 @@
             "title": "Slider", 
             "type": "slider", 
             "average": 19.333333333333332,
-            "max": 100,
-            "min": 0
+            "max": 100.0,
+            "min": 0.0
         }, 
         {
             "countries": {
@@ -33,5 +33,9 @@
             "top": "A"
         }
     ], 
+    "country_messages": {
+        "Côte d'Ivoire": "<div>\n    Some arbitrary text ✓\n  </div>\n  ",
+        "Italy": "<div>\n    or <code>HTML</code>\n  </div>\n"
+    },
     "survey_qualtrics_id": "SV_0pQ0bjc02t8PNDT"
 }
