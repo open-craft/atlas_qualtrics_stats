@@ -9,6 +9,7 @@ import datetime
 import threading
 import io
 import re
+import shutil
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -235,7 +236,22 @@ class TestGenAPIKey(DBTestMixin, unittest.TestCase):
         self.assertEqual(session.query(API_key).filter(API_key.key == new_API_key).count(), 1)
 
 
-class TestCron(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
+class CronTestMixin():
+    def setUp(self):
+        # Make sure that we don't nuke a existing json folder on tearDown
+        if os.path.exists('json'):
+            os.rmdir('json')
+
+        super(CronTestMixin, self).setUp()
+
+    def tearDown(self):
+        if os.path.exists('json'):
+            shutil.rmtree('json')
+
+        super(CronTestMixin, self).tearDown()
+
+
+class TestCron(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.TestCase):
     def test_cron_execution(self):
         self.new_tst_job()
 
@@ -246,8 +262,11 @@ class TestCron(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
         with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
             self.assertEqual(json.loads(job.value), json.load(f))
 
+        with open(os.path.join('json', job.id + '.json')) as f:
+            self.assertEqual(json.loads(job.value), json.load(f))
 
-class TestServer(CSVOverrideTestMixin, DBTestMixin, unittest.TestCase):
+
+class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.TestCase):
     def setUp(self):
         super(TestServer, self).setUp()
 

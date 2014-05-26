@@ -14,14 +14,15 @@ Generate and serve statistics for a Qualtrics survey.
 
 Usage:
   qualtrics_stats generate [--override=<file>] <survey_xml_spec>
-  qualtrics_stats cron [--override=<file>] [--db=<conn-string>]
-  qualtrics_stats serve [--override=<file>] [--db=<conn-string>] [--listen=<addr>]
-  qualtrics_stats gen_API_key [--db=<conn-string>]
+  qualtrics_stats cron [--override=<file>]
+  qualtrics_stats serve [--override=<file>]
+  qualtrics_stats gen_API_key
   qualtrics_stats (-h | --help)
   qualtrics_stats --version
 
 generate will run a job one-off;
-cron is meant to be run by a cronjob, generates all statistics in the db;
+cron is meant to be run by a cronjob, generates all statistics in the db and
+  saves them in "./json/<job_id>.json";
 serve will run a web server exposing the REST API;
 gen_API_key adds to the db and prints a new random API_key.
 
@@ -29,15 +30,20 @@ Generation options:
   --override=FILE  Read the csv from a file instad of from the API
                    PLEASE NOTE THAT THIS IS INTENDED FOR DEVELOPMENT ONLY
 
-Server options:
-  --listen=ADDR    Specify the address to listen on [default: 0.0.0.0:8080]
-
-Database options:
-  --db=CONN_STR    A SQLAlchemy connection string [default: sqlite:///qualtrics_stats.db]
-
 General options:
   -h --help        Show this screen.
   --version        Show version.
+```
+
+A `config.py` file inside the package holds the following options:
+
+```
+# A SQLAlchemy connection string
+DB_CONN_STRING = 'sqlite:///qualtrics_stats.db'
+# DB_CONN_STRING = 'mysql+oursql://root:password@localhost/qualtrics_stats'
+
+# Address and port to listen on on `serve`
+SERVER_LISTEN_ADDR = '0.0.0.0:8080'
 ```
 
 ## XML survey specification
