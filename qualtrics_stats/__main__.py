@@ -10,7 +10,7 @@ Usage:
 
 generate will run a job one-off;
 cron is meant to be run by a cronjob, generates all statistics in the db and
-  saves them in "./json/<job_id>.json";
+  saves them in CRON_RESULTS_PATH;
 serve will run a web server exposing the REST API;
 gen_API_key adds to the db and prints a new random API_key.
 
