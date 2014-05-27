@@ -5,14 +5,60 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>World Atlas - admin panel - new</title>
+    <title>World Atlas admin panel - new mode</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.css">
+
+    <style>
+        .container {
+            width: auto;
+            max-width: 900px;
+            padding: 0 15px;
+        }
+
+        .CodeMirror {
+          border: 1px solid #eee;
+          height: auto;
+        }
+        .CodeMirror-scroll {
+          overflow-y: hidden;
+          overflow-x: auto;
+        }
+
+        form .btn {
+            margin: 15px 5px;
+        }
+
+        .banner {
+            font-size: 25px;
+            line-height: 40px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .form-group .form-control {
+            margin-left: 10px;
+            width: 300px;
+        }
+        .form-group {
+            margin-top: 15px;
+        }
+    </style>
 </head>
 
 <body>
-    <form action="" method="POST">
-        <textarea name="xml">
+    <div class="container">
+        <div class="page-header"><h1>
+            World Atlas admin panel
+        </h1></div>
+
+        <form action="" method="POST" class="form-inline">
+            <h3>Creating a new job</h3>
+
+            <textarea name="xml">
 &lt;qualtrics user=&quot;XXXXXXXXXXXX#xxxxxx&quot; password=&quot;XXXXXXXXXXXX&quot;&gt;
 &lt;survey qualtrics_survey_id=&quot;SV_0pQ0bjc02t8PNDT&quot; country_column=&quot;11&quot;&gt;
   &lt;!-- country_column, column and columns are zero-indexed --&gt;
@@ -34,22 +80,27 @@
   &lt;/country&gt;
 &lt;/country_messages&gt;
 &lt;/qualtrics&gt;
-        </textarea>
+            </textarea>
 
-        <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
 
-        Name: <input type="text" name="name">
-        <input type="submit">
-    </form>
-
-    <a href="{{ url_for('.admin_index') }}">Back</a>
+            <div class="form-group">
+                <label for="name">Job name:</label>
+                <input type="text" class="form-control" name="name">
+            </div>
+            <input class="btn btn-primary pull-right" type="submit" value="Create">
+            <a class="btn btn-default pull-right" href="{{ url_for('.admin_index') }}">Back</a>
+        </form>
+    </div>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/mode/xml/xml.js"></script>
 
     <script>
-        var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0]);
+        var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0], {
+            viewportMargin: Infinity
+        });
     </script>
 </body>
 

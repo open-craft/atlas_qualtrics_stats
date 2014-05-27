@@ -5,21 +5,52 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>World Atlas - admin panel - list</title>
+    <title>World Atlas admin panel</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
+
+    <style>
+        .container {
+            width: auto;
+            max-width: 900px;
+            padding: 0 15px;
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        td:first-child {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-    <ul>
-    {% for job in jobs %}
-        <li>{{ job.id }}
-            - <a href="{{ url_for('.admin_edit', stat_id=job.id) }}">Edit</a>
-            - <a href="{{ url_for('.admin_delete', stat_id=job.id) }}">Delete</a>
-            - <a href="{{ url_for('.get_stat', stat_id=job.id, API_key=g.user_API_key) }}">View</a>
-        </li>
-    {% endfor %}
-    </ul>
+    <div class="container">
+        <div class="page-header"><h1>
+            World Atlas admin panel
+        </h1></div>
 
-    <a href="/admin/new">Create a new statistic</a>
+        <table class="table-striped">
+        {% for job in jobs %}
+            <tr>
+                <td><code>{{ job.id }}</code></td>
+                <td><a href="{{ url_for('.admin_edit', stat_id=job.id) }}" class="btn btn-primary">Edit</a></td>
+                <td><a href="{{ url_for('.admin_delete', stat_id=job.id) }}" class="btn btn-danger">Delete</a></td>
+                <td><a href="{{ url_for('.get_stat', stat_id=job.id, API_key=g.user_API_key) }}" class="btn btn-info">View</a></td>
+            </tr>
+        {% endfor %}
+        </table>
+
+        <a href="/admin/new" class="btn btn-primary">Create a new statistic</a>
+    </div>
 </body>
 
 </html>
