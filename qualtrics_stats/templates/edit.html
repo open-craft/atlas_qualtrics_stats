@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Atlas - admin panel - edit</title>
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.css">
+</head>
+
+<body>
+    {% if request.args.get('saved') %}
+    <div>Saved!</div>
+    {% endif %}
+
+    <form action="" method="POST">
+        <h1>{{ stat_id }}</h1>
+
+        <textarea name="xml">{{ xml }}</textarea>
+
+        <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+        <input type="submit">
+    </form>
+
+    <a href="{{ url_for('.admin_index') }}">Back</a>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/mode/xml/xml.js"></script>
+
+    <script>
+        var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0]);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Atlas - admin panel - list</title>
+</head>
+
+<body>
+    <ul>
+    {% for job in jobs %}
+        <li>{{ job.id }}
+            - <a href="{{ url_for('.admin_edit', stat_id=job.id) }}">Edit</a>
+            - <a href="{{ url_for('.admin_delete', stat_id=job.id) }}">Delete</a>
+            - <a href="{{ url_for('.get_stat', stat_id=job.id, API_key=g.user_API_key) }}">View</a>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <a href="/admin/new">Create a new statistic</a>
+</body>
+
+</html>

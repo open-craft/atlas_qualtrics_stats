@@ -64,7 +64,7 @@ def benchmark():
     values = [random.randint(0, 10) for _ in range(10000000)]
 
     print('Averaging...')
-    true_avg = float(sum(values))/len(values)
+    true_avg = float(sum(values)) / len(values)
 
     print('Testing...')
 

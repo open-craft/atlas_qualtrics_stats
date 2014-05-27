@@ -33,7 +33,7 @@ class TestRunningAverage(unittest.TestCase):
         random.seed('running_average_test')  # to make the test deterministic
         values = [random.uniform(1, 10) for _ in range(1000000)]
 
-        true_avg = float(sum(values))/len(values)
+        true_avg = float(sum(values)) / len(values)
         true_max = max(values)
         true_min = min(values)
 
@@ -169,7 +169,7 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             from .. import generate
             with self.assertLogs(level='ERROR') as cm:
                 QS = generate.QualtricsStats(os.path.join(TEST_DIR, filename))
-            self.assertEqual(cm.output, ['ERROR:root:'+error])
+            self.assertEqual(cm.output, ['ERROR:root:' + error])
             res = json.loads(QS.run())
             self.assertEqual(res['error'], error)
 
@@ -275,10 +275,6 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         self.app = app.test_client()
 
     def test_bad_API_key(self):
-        rv = self.app.get('/stat/foo?API_key=not_existing')
-        self.assertEqual(rv.status_code, 403)
-        self.assertIn(b'API_key not valid', rv.get_data())
-
         rv = self.app.put('/stat/foo?API_key=not_existing')
         self.assertEqual(rv.status_code, 403)
         self.assertIn(b'API_key not valid', rv.get_data())

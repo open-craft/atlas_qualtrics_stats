@@ -23,7 +23,7 @@ Usage:
 generate will run a job one-off;
 cron is meant to be run by a cronjob, generates all statistics in the db and
   saves them in CRON_RESULTS_PATH;
-serve will run a web server exposing the REST API;
+serve will run a web server exposing the REST API and admin panel (at /admin/);
 gen_API_key adds to the db and prints a new random API_key.
 
 Generation options:
@@ -48,6 +48,12 @@ SERVER_LISTEN_ADDR = '0.0.0.0:8080'
 # Where cron creates the json results
 # {} -> job.id
 CRON_RESULTS_PATH = "./json/{}.json"
+
+# Authentication parameters for the admin panel
+# The password is generated like this:
+# >>> binascii.hexlify(scrypt.hash(password, '6cFp3RgPkd8ABVZugrbu', N=1 << 16))
+ADMIN_USER = 'admin'
+ADMIN_PASS = '...'
 ```
 
 ## XML survey specification
