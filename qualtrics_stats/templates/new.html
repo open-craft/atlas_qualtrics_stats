@@ -11,6 +11,7 @@
     <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/theme/mdn-like.css">
 
     <style>
         .container {
@@ -20,8 +21,9 @@
         }
 
         .CodeMirror {
-          border: 1px solid #eee;
+          border: 1px solid #aaa;
           height: auto;
+          font-size: 13px;
         }
         .CodeMirror-scroll {
           overflow-y: hidden;
@@ -96,10 +98,16 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/mode/xml/xml.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/addon/selection/active-line.js"></script>
 
     <script>
         var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0], {
-            viewportMargin: Infinity
+            viewportMargin: Infinity,
+            theme: "mdn-like",
+            lineNumbers: true,
+            lineWrapping: true,
+            autofocus: true,
+            styleActiveLine: true
         });
     </script>
 </body>
