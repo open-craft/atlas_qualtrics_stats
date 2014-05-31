@@ -9,7 +9,6 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from flask import Flask, Response
 from flask import request
 from flask import render_template, redirect, abort, url_for
-from flask_sslify import SSLify
 from threading import Thread
 from io import StringIO
 
@@ -22,7 +21,6 @@ from .config import ADMIN_USER, ADMIN_PASS
 
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())
-# sslify = SSLify(app)
 
 
 ### Helpers
