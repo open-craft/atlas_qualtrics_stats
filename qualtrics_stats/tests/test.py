@@ -10,6 +10,9 @@ import threading
 import io
 import re
 import shutil
+import base64
+import binascii
+import scrypt
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -279,6 +282,11 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         self.assertEqual(rv.status_code, 403)
         self.assertIn(b'API_key not valid', rv.get_data())
 
+    def test_no_API_key(self):
+        rv = self.app.put('/stat/foo')
+        self.assertEqual(rv.status_code, 403)
+        self.assertIn(b'API_key not valid', rv.get_data())
+
     def test_GET_404(self):
         from ..db import gen_API_key
         API_key = gen_API_key()
@@ -391,3 +399,155 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
             time.sleep(1)
         else:
             self.fail('The job did not get executed in 60s')
+
+
+class TestAdmin(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.TestCase):
+    def setUp(self):
+        super(TestAdmin, self).setUp()
+
+        from .. import config
+        config.ADMIN_PASS = binascii.hexlify(scrypt.hash(
+            'password', '6cFp3RgPkd8ABVZugrbu', N=1 << 16)).decode()
+
+        from ..server import app
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def gen_auth(self, username='admin', password='password'):
+        return {"Authorization": "Basic " + base64.b64encode(
+            username.encode() + b':' + password.encode()).decode()}
+
+    def extract_csrf_token(self, html):
+        r = re.compile(r'<input name="_csrf_token" type="hidden" value="(.*?)">')
+        return r.search(html).group(1)
+
+    def test_auth(self):
+        rv = self.app.get('/admin/', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+
+        rv = self.app.get('/admin/')
+        self.assertEqual(rv.status_code, 401)
+
+        rv = self.app.get('/admin/', headers=self.gen_auth(password='xxx'))
+        self.assertEqual(rv.status_code, 401)
+
+    def test_csrf(self):
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': 'xxx'})
+        self.assertEqual(rv.status_code, 403)
+
+        rv = self.app.post('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 403)
+
+        self.app.get('/admin/new', headers=self.gen_auth())
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': 'xxx'})
+        self.assertEqual(rv.status_code, 403)
+
+        rv = self.app.post('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 403)
+
+    def test_full_cycle(self):
+        # First create a job
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'test_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        # Then check that it shows up in the list
+        rv = self.app.get('/admin/', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn('<td><code>test_job</code></td>', rv.get_data().decode('utf-8'))
+
+        # Now edit it
+        rv = self.app.get('/admin/edit/test_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        data = rv.get_data().decode('utf-8')
+        csrf_token = self.extract_csrf_token(data)
+        self.assertIn('<h3>Editing: <code>test_job</code></h3>', data)
+        self.assertIn('<textarea name="xml">test body ✓</textarea>', data)
+
+        rv = self.app.post('/admin/edit/test_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'xml': 'new test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        rv = self.app.get('/admin/edit/test_job', headers=self.gen_auth())
+        data = rv.get_data().decode('utf-8')
+        self.assertIn('<textarea name="xml">new test body ✓</textarea>', data)
+
+        # Finally delete it
+        rv = self.app.get('/admin/delete/test_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/delete/test_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token})
+        self.assertEqual(rv.status_code, 303)
+
+    def test_invalid_name(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': '',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'test/test',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+    def test_duplicate_name(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'duplicate_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'duplicate_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+    def test_not_existing_job(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.get('/admin/edit/not_existing_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 404)
+
+        rv = self.app.post('/admin/edit/not_existing_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'xml': 'new test body ✓'})
+        self.assertEqual(rv.status_code, 404)
+
+        rv = self.app.post('/admin/delete/not_existing_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token})
+        self.assertEqual(rv.status_code, 404)
