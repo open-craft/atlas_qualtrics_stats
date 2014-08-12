@@ -30,8 +30,10 @@ class Job(Base):
     last_run = Column(DateTime)
 
 
-def init_db(conn_string):
+def init_db(conn_string, drop_all=False):
     engine = create_engine(conn_string)
+    if drop_all:
+        Base.metadata.drop_all(engine)
     Session.configure(bind=engine)
     Base.metadata.create_all(engine)
 

@@ -197,6 +197,7 @@ class DBTestMixin():
 
         from ..db import init_db
         init_db('sqlite:///.qualtrics_stats_tests.db')
+        # init_db('mysql+oursql://root:password@localhost/qualtrics_stats_test', drop_all=True)
 
         from ..db import Session, API_key
         session = Session()
