@@ -1,13 +1,14 @@
 import uuid
 
 from sqlalchemy import create_engine, ForeignKey
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, Text, String
 
 
-Session = sessionmaker()
+Session = scoped_session(sessionmaker())
 Base = declarative_base()
+Base.query = Session.query_property()
 
 
 class API_key(Base):

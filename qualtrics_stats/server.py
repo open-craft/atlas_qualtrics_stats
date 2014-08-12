@@ -108,6 +108,11 @@ def generate_csrf_token():
 app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    Session.remove()
+
+
 ### API views
 
 @app.route("/stat/<stat_id>", methods=['GET'])

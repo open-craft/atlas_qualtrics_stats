@@ -201,6 +201,8 @@ class DBTestMixin():
         super(DBTestMixin, self).setUp()
 
     def tearDown(self):
+        from ..db import Session
+        Session.remove()
         os.remove('.qualtrics_stats_tests.db')
 
         super(DBTestMixin, self).tearDown()
@@ -226,6 +228,7 @@ class DBTestMixin():
         job = session.query(Job).filter(Job.API_key == API_key,
                                         Job.id == "test").one()
 
+        session.close()
         return job
 
 
@@ -237,6 +240,8 @@ class TestGenAPIKey(DBTestMixin, unittest.TestCase):
         new_API_key = gen_API_key()
 
         self.assertEqual(session.query(API_key).filter(API_key.key == new_API_key).count(), 1)
+
+        session.close()
 
 
 class CronTestMixin():
