@@ -198,6 +198,12 @@ class DBTestMixin():
         from ..db import init_db
         init_db('sqlite:///.qualtrics_stats_tests.db')
 
+        from ..db import Session, API_key
+        session = Session()
+        api_key = API_key(key="test")
+        session.add(api_key)
+        session.commit()
+
         super(DBTestMixin, self).setUp()
 
     def tearDown(self):
@@ -221,12 +227,12 @@ class DBTestMixin():
         session.add(job)
         session.commit()
 
-    def get_tst_job(self, id="test", API_key="test"):
+    def get_tst_job(self, job_id="test", API_key="test"):
         from ..db import Session, Job
         session = Session()
 
         job = session.query(Job).filter(Job.API_key == API_key,
-                                        Job.id == "test").one()
+                                        Job.id == job_id).one()
 
         session.close()
         return job
@@ -304,7 +310,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key="test")
+        self.new_tst_job()
 
         rv = self.app.get('/stat/test?API_key=' + API_key)
         self.assertEqual(rv.status_code, 404)
@@ -314,7 +320,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key=API_key)
+        self.new_tst_job(API_key=API_key)
 
         rv = self.app.get('/stat/test?API_key=' + API_key)
         self.assertEqual(rv.status_code, 202)
@@ -324,7 +330,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key=API_key)
+        self.new_tst_job(API_key=API_key)
 
         from ..cron import cron
         cron()

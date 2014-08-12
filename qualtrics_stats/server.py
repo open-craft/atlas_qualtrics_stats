@@ -82,6 +82,11 @@ def requires_auth(f):
         flask.g.user_API_key = binascii.hexlify(scrypt.hash(
             auth.password, 'fCo9cB4fQ7bnxGAoZcVo', N=1 << 16)).decode()[:16]
 
+        session = Session()
+        api_key = API_key(key=flask.g.user_API_key)
+        session.merge(api_key)
+        session.commit()
+
         return f(*args, **kwargs)
     return decorated
 
