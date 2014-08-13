@@ -10,6 +10,9 @@ import threading
 import io
 import re
 import shutil
+import base64
+import binascii
+import scrypt
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -33,7 +36,7 @@ class TestRunningAverage(unittest.TestCase):
         random.seed('running_average_test')  # to make the test deterministic
         values = [random.uniform(1, 10) for _ in range(1000000)]
 
-        true_avg = float(sum(values))/len(values)
+        true_avg = float(sum(values)) / len(values)
         true_max = max(values)
         true_min = min(values)
 
@@ -169,7 +172,7 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             from .. import generate
             with self.assertLogs(level='ERROR') as cm:
                 QS = generate.QualtricsStats(os.path.join(TEST_DIR, filename))
-            self.assertEqual(cm.output, ['ERROR:root:'+error])
+            self.assertEqual(cm.output, ['ERROR:root:' + error])
             res = json.loads(QS.run())
             self.assertEqual(res['error'], error)
 
@@ -194,10 +197,19 @@ class DBTestMixin():
 
         from ..db import init_db
         init_db('sqlite:///.qualtrics_stats_tests.db')
+        # init_db('mysql+oursql://root:password@localhost/qualtrics_stats_test', drop_all=True)
+
+        from ..db import Session, API_key
+        session = Session()
+        api_key = API_key(key="test")
+        session.add(api_key)
+        session.commit()
 
         super(DBTestMixin, self).setUp()
 
     def tearDown(self):
+        from ..db import Session
+        Session.remove()
         os.remove('.qualtrics_stats_tests.db')
 
         super(DBTestMixin, self).tearDown()
@@ -216,13 +228,14 @@ class DBTestMixin():
         session.add(job)
         session.commit()
 
-    def get_tst_job(self, id="test", API_key="test"):
+    def get_tst_job(self, job_id="test", API_key="test"):
         from ..db import Session, Job
         session = Session()
 
         job = session.query(Job).filter(Job.API_key == API_key,
-                                        Job.id == "test").one()
+                                        Job.id == job_id).one()
 
+        session.close()
         return job
 
 
@@ -234,6 +247,8 @@ class TestGenAPIKey(DBTestMixin, unittest.TestCase):
         new_API_key = gen_API_key()
 
         self.assertEqual(session.query(API_key).filter(API_key.key == new_API_key).count(), 1)
+
+        session.close()
 
 
 class CronTestMixin():
@@ -275,11 +290,12 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         self.app = app.test_client()
 
     def test_bad_API_key(self):
-        rv = self.app.get('/stat/foo?API_key=not_existing')
+        rv = self.app.put('/stat/foo?API_key=not_existing')
         self.assertEqual(rv.status_code, 403)
         self.assertIn(b'API_key not valid', rv.get_data())
 
-        rv = self.app.put('/stat/foo?API_key=not_existing')
+    def test_no_API_key(self):
+        rv = self.app.put('/stat/foo')
         self.assertEqual(rv.status_code, 403)
         self.assertIn(b'API_key not valid', rv.get_data())
 
@@ -295,7 +311,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key="test")
+        self.new_tst_job()
 
         rv = self.app.get('/stat/test?API_key=' + API_key)
         self.assertEqual(rv.status_code, 404)
@@ -305,7 +321,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key=API_key)
+        self.new_tst_job(API_key=API_key)
 
         rv = self.app.get('/stat/test?API_key=' + API_key)
         self.assertEqual(rv.status_code, 202)
@@ -315,7 +331,7 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
         from ..db import gen_API_key
         API_key = gen_API_key()
 
-        self.new_tst_job(id="test", API_key=API_key)
+        self.new_tst_job(API_key=API_key)
 
         from ..cron import cron
         cron()
@@ -395,3 +411,155 @@ class TestServer(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.Test
             time.sleep(1)
         else:
             self.fail('The job did not get executed in 60s')
+
+
+class TestAdmin(CSVOverrideTestMixin, DBTestMixin, CronTestMixin, unittest.TestCase):
+    def setUp(self):
+        super(TestAdmin, self).setUp()
+
+        from .. import config
+        config.ADMIN_PASS = binascii.hexlify(scrypt.hash(
+            'password', '6cFp3RgPkd8ABVZugrbu', N=1 << 16)).decode()
+
+        from ..server import app
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def gen_auth(self, username='admin', password='password'):
+        return {"Authorization": "Basic " + base64.b64encode(
+            username.encode() + b':' + password.encode()).decode()}
+
+    def extract_csrf_token(self, html):
+        r = re.compile(r'<input name="_csrf_token" type="hidden" value="(.*?)">')
+        return r.search(html).group(1)
+
+    def test_auth(self):
+        rv = self.app.get('/admin/', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+
+        rv = self.app.get('/admin/')
+        self.assertEqual(rv.status_code, 401)
+
+        rv = self.app.get('/admin/', headers=self.gen_auth(password='xxx'))
+        self.assertEqual(rv.status_code, 401)
+
+    def test_csrf(self):
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': 'xxx'})
+        self.assertEqual(rv.status_code, 403)
+
+        rv = self.app.post('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 403)
+
+        self.app.get('/admin/new', headers=self.gen_auth())
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': 'xxx'})
+        self.assertEqual(rv.status_code, 403)
+
+        rv = self.app.post('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 403)
+
+    def test_full_cycle(self):
+        # First create a job
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'test_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        # Then check that it shows up in the list
+        rv = self.app.get('/admin/', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        self.assertIn('<td><code>test_job</code></td>', rv.get_data().decode('utf-8'))
+
+        # Now edit it
+        rv = self.app.get('/admin/edit/test_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        data = rv.get_data().decode('utf-8')
+        csrf_token = self.extract_csrf_token(data)
+        self.assertIn('<h3>Editing: <code>test_job</code></h3>', data)
+        self.assertIn('<textarea name="xml">test body ✓</textarea>', data)
+
+        rv = self.app.post('/admin/edit/test_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'xml': 'new test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        rv = self.app.get('/admin/edit/test_job', headers=self.gen_auth())
+        data = rv.get_data().decode('utf-8')
+        self.assertIn('<textarea name="xml">new test body ✓</textarea>', data)
+
+        # Finally delete it
+        rv = self.app.get('/admin/delete/test_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/delete/test_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token})
+        self.assertEqual(rv.status_code, 303)
+
+    def test_invalid_name(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': '',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'test/test',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+    def test_duplicate_name(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 200)
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'duplicate_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 303)
+
+        rv = self.app.post('/admin/new',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'name': 'duplicate_job',
+                                 'xml': 'test body ✓'})
+        self.assertEqual(rv.status_code, 400)
+
+    def test_not_existing_job(self):
+        rv = self.app.get('/admin/new', headers=self.gen_auth())
+        csrf_token = self.extract_csrf_token(rv.get_data().decode('utf-8'))
+
+        rv = self.app.get('/admin/edit/not_existing_job', headers=self.gen_auth())
+        self.assertEqual(rv.status_code, 404)
+
+        rv = self.app.post('/admin/edit/not_existing_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token,
+                                 'xml': 'new test body ✓'})
+        self.assertEqual(rv.status_code, 404)
+
+        rv = self.app.post('/admin/delete/not_existing_job',
+                           headers=self.gen_auth(),
+                           data={'_csrf_token': csrf_token})
+        self.assertEqual(rv.status_code, 404)

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Atlas admin panel - edit mode</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/theme/mdn-like.css">
+
+    <style>
+        .container {
+            width: auto;
+            max-width: 900px;
+            padding: 0 15px;
+        }
+
+        .CodeMirror {
+          border: 1px solid #aaa;
+          height: auto;
+          font-size: 13px;
+        }
+        .CodeMirror-scroll {
+          overflow-y: hidden;
+          overflow-x: auto;
+        }
+
+        form .btn {
+            margin: 15px 5px;
+        }
+
+        .banner {
+            font-size: 25px;
+            line-height: 40px;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header"><h1>
+            World Atlas admin panel
+        </h1></div>
+
+        {% if request.args.get('saved') %}
+        <h3 class="bg-success banner">Saved!</h3>
+        {% endif %}
+
+        <form action="" method="POST">
+            <h3>Editing: <code>{{ stat_id }}</code></h3>
+
+            <textarea name="xml">{{ xml }}</textarea>
+
+            <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input class="btn btn-primary" type="submit" value="Save">
+            <a class="btn btn-default" href="{{ url_for('.admin_index') }}">Back</a>
+        </form>
+    </div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/mode/xml/xml.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/addon/selection/active-line.js"></script>
+
+    <script>
+        var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0], {
+            viewportMargin: Infinity,
+            theme: "mdn-like",
+            lineNumbers: true,
+            lineWrapping: true,
+            autofocus: true,
+            styleActiveLine: true
+        });
+    </script>
+</body>
+
+</html>

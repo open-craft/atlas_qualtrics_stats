@@ -8,3 +8,4 @@ requests==2.2.1
 lockfile==0.9.1
 SQLAlchemy==0.9.4
 https://launchpad.net/oursql/py3k/py3k-0.9.4/+download/oursql-0.9.4.zip
+scrypt==0.6.1

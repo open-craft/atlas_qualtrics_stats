@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Atlas admin panel - new mode</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/theme/mdn-like.css">
+
+    <style>
+        .container {
+            width: auto;
+            max-width: 900px;
+            padding: 0 15px;
+        }
+
+        .CodeMirror {
+          border: 1px solid #aaa;
+          height: auto;
+          font-size: 13px;
+        }
+        .CodeMirror-scroll {
+          overflow-y: hidden;
+          overflow-x: auto;
+        }
+
+        form .btn {
+            margin: 15px 5px;
+        }
+
+        .banner {
+            font-size: 25px;
+            line-height: 40px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .form-group .form-control {
+            margin-left: 10px;
+            width: 300px;
+        }
+        .form-group {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header"><h1>
+            World Atlas admin panel
+        </h1></div>
+
+        <form action="" method="POST" class="form-inline">
+            <h3>Creating a new job</h3>
+
+            <textarea name="xml">
+&lt;qualtrics user=&quot;XXXXXXXXXXXX#xxxxxx&quot; password=&quot;XXXXXXXXXXXX&quot;&gt;
+&lt;survey qualtrics_survey_id=&quot;SV_0pQ0bjc02t8PNDT&quot; country_column=&quot;11&quot;&gt;
+  &lt;!-- country_column, column and columns are zero-indexed --&gt;
+  &lt;!-- columns: both start-end included --&gt;
+  &lt;mrq title=&quot;MRQ&quot; columns=&quot;18-21&quot; ignore_column=&quot;23&quot; /&gt;
+  &lt;slider title=&quot;Slider&quot; column=&quot;15&quot; max=&quot;100.0&quot; min=&quot;0&quot; /&gt;
+  &lt;rank title=&quot;Rank order&quot;&gt;
+    &lt;option title=&quot;A&quot; column=&quot;12&quot; /&gt;
+    &lt;option title=&quot;B&quot; column=&quot;13&quot; /&gt;
+    &lt;option title=&quot;C&quot; column=&quot;14&quot; /&gt;
+  &lt;/rank&gt;
+&lt;/survey&gt;
+&lt;country_messages&gt;
+  &lt;country name=&quot;C&ocirc;te d'Ivoire&quot;&gt;
+    Some arbitrary text &#x2713;
+  &lt;/country&gt;
+  &lt;country name=&quot;Italy&quot;&gt;
+    or &lt;code&gt;HTML&lt;/code&gt;
+  &lt;/country&gt;
+&lt;/country_messages&gt;
+&lt;/qualtrics&gt;
+            </textarea>
+
+            <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="name">Job name:</label>
+                <input type="text" class="form-control" name="name">
+            </div>
+            <input class="btn btn-primary pull-right" type="submit" value="Create">
+            <a class="btn btn-default pull-right" href="{{ url_for('.admin_index') }}">Back</a>
+        </form>
+    </div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/codemirror.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/mode/xml/xml.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/4.2.0/addon/selection/active-line.js"></script>
+
+    <script>
+        var myCodeMirror = CodeMirror.fromTextArea($('textarea')[0], {
+            viewportMargin: Infinity,
+            theme: "mdn-like",
+            lineNumbers: true,
+            lineWrapping: true,
+            autofocus: true,
+            styleActiveLine: true
+        });
+    </script>
+</body>
+
+</html>

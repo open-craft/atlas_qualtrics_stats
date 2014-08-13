@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Atlas admin panel - confirm delete</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flat-ui.css') }}" rel="stylesheet">
+
+    <style>
+        .container {
+            width: auto;
+            max-width: 900px;
+            padding: 0 15px;
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        td:first-child {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header"><h1>
+            World Atlas admin panel
+        </h1></div>
+
+        <form action="" method="POST">
+            <table><tr>
+                <td>Are you sure you want to delete job {{ stat_id }}?</td>
+                <td><input type="submit" value="YES" class="btn btn-danger"></td>
+                <td><a href="{{ url_for('.admin_index') }}" class="btn btn-default">Back</a></td>
+            </tr></table>
+
+            <input name="_csrf_token" type="hidden" value="{{ csrf_token() }}">
+        </form>
+    </div>
+</body>
+
+</html>
