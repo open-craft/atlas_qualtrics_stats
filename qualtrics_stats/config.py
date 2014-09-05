@@ -1,6 +1,5 @@
 # A SQLAlchemy connection string
-DB_CONN_STRING = 'sqlite:///qualtrics_stats.db'
-# DB_CONN_STRING = 'mysql+oursql://root:password@localhost/qualtrics_stats'
+DB_CONN_STRING = 'mysql+oursql://harvard:Biz6sU1UtURniPoi@atlas2.cifappqfiyph.us-east-1.rds.amazonaws.com/atlas'
 
 # Address and port to listen on on `serve`
 SERVER_LISTEN_ADDR = '0.0.0.0:8080'
@@ -13,4 +12,5 @@ CRON_RESULTS_PATH = "./json/{}.json"
 # The password is generated like this:
 # >>> binascii.hexlify(scrypt.hash(password, '6cFp3RgPkd8ABVZugrbu', N=1 << 16))
 ADMIN_USER = 'admin'
-ADMIN_PASS = '030c9959ba9381a12a0831492c97cb023d3f74d67c548a6db24d3ef2cc24ddd9af0aaa5c04718cd13be9dd60a426393bcd540730408f2cf582c42e60b61b4b2d'
+ADMIN_PASS = 'e09724d24f4ccd1f72862285fbc565266b7b6922607c7e77fae24ec155937311e2378a75ea5bbaee5c9c80dcf3e374605dd41a03fee51e170226435e036c1fcf'
+
