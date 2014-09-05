@@ -53,6 +53,7 @@ coverage.xml
 docs/_build/
 
 # virtualenv
-ENV/
+/ENV/
 
-qualtrics_stats.db
+/qualtrics_stats.db
+/json
