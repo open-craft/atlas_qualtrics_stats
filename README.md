@@ -78,7 +78,9 @@ And inside that a `survey` tag with the following attributes:
 
 Inside the survey tag go one or more of the following question tags. 
 
-All the question tags have a `title` attribute, that is the display name for that question.
+All the question tags have a `title` attribute, that is the display name for that question. If you wish to
+include HTML in the title, it is allowed, but you will need to encode it with HTML entities to keep the XML
+valid. HTML entities will automatically be decoded during the JSON file generation.
 
 All the column numbers are 0-indexed.
 
