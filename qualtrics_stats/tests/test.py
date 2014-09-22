@@ -26,7 +26,7 @@ class TestCodeFormat(unittest.TestCase):
             glob.glob(os.path.join(TEST_DIR, '../*.py')) +
             glob.glob(os.path.join(TEST_DIR, '*.py')))
         self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
+                         "Found code style errors (and warnings): {}".format(result.print_statistics()))
 
 
 class TestRunningAverage(unittest.TestCase):

@@ -13,4 +13,3 @@ CRON_RESULTS_PATH = "./json/{}.json"
 # >>> binascii.hexlify(scrypt.hash(password, '6cFp3RgPkd8ABVZugrbu', N=1 << 16))
 ADMIN_USER = 'admin'
 ADMIN_PASS = 'e09724d24f4ccd1f72862285fbc565266b7b6922607c7e77fae24ec155937311e2378a75ea5bbaee5c9c80dcf3e374605dd41a03fee51e170226435e036c1fcf'
-
