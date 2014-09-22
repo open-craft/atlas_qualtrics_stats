@@ -115,6 +115,20 @@ class TestGeneration(CSVOverrideTestMixin, unittest.TestCase):
             js_test["statistics"][1]["min"] = 6
             self.assertEqual(res, js_test)
 
+    def test_title_html_unescape(self):
+        from .. import generate
+        with open(os.path.join(TEST_DIR, '../exampleSurvey.xml')) as f:
+            xml = f.read()
+        with open(os.path.join(TEST_DIR, 'edX_test.json')) as f:
+            js_test = json.load(f)
+            for i, t in enumerate(('MRQ', 'Slider', 'Rank order')):
+                xml = xml.replace('title="{}'.format(t), 'title="&lt;br /&gt;{}'.format(t))
+                js_test["statistics"][i]["title"] = '<br />{}'.format(t)
+
+        QS = generate.QualtricsStats(io.StringIO(xml))
+        res = json.loads(QS.run())
+        self.assertEqual(res, js_test)
+
     def test_100K_lines_performance(self):
         def csv_lines_repetitor():
             f = open(os.path.join(TEST_DIR, 'edX_test.csv'))

@@ -3,6 +3,7 @@ import requests
 import csv
 import json
 import logging
+import html.parser
 from collections import defaultdict, Counter
 
 from .running_average import RunningAverage
@@ -12,7 +13,10 @@ csv_override = None
 
 
 class Question:
-    pass
+    @property
+    def title_unescaped(self):
+        parser = html.parser.HTMLParser()
+        return parser.unescape(self.title)
 
 
 class MRQQuestion(Question):
@@ -70,7 +74,7 @@ class MRQQuestion(Question):
     def as_dict(self):
         return {
             'type': 'mrq',
-            'title': self.title,
+            'title': self.title_unescaped,
             'average': self.general.average,
             'countries': dict((k, v.average) for k, v in self.countries.items()),
             'max': self.end - self.start + 1,
@@ -133,7 +137,7 @@ class RankQuestion(Question):
     def as_dict(self):
         return {
             'type': 'rank',
-            'title': self.title,
+            'title': self.title_unescaped,
             'top': self._get_top(self.general),
             'countries': dict((k, self._get_top(v)) for k, v in self.countries.items())
         }
@@ -188,7 +192,7 @@ class SliderQuestion(Question):
     def as_dict(self):
         return {
             'type': 'slider',
-            'title': self.title,
+            'title': self.title_unescaped,
             'average': self.general.average,
             'countries': dict((k, v.average) for k, v in self.countries.items()),
             'max': self.max if self.max is not None else self.general.max,
