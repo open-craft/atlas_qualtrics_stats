@@ -180,10 +180,15 @@ class SliderQuestion(Question):
     def parse_line(self, csv_line):
         country = csv_line[self.country_column]
         if csv_line[self.column] != '99999':  # Skip unanswered sliders
-            n = float(csv_line[self.column])
-            self.general.add(n)
-            if country != '99999':
-                self.countries[country].add(n)
+            try:
+                n = float(csv_line[self.column])
+            except ValueError:
+                # If we received a value that can't be parsed as a float, log it, but then ignore the value.
+                logging.warning('Could not interpret value as number: %r', csv_line[self.column])
+            else:
+                self.general.add(n)
+                if country != '99999':
+                    self.countries[country].add(n)
 
     def as_dict(self):
         return {
